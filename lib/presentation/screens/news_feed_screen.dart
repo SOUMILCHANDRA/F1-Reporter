@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../theme/pitwall_theme.dart';
 import '../widgets/pitwall_widgets.dart';
-import '../../data/news_data.dart';
+import '../../providers/api_providers.dart';
 
-class NewsFeedScreen extends StatefulWidget {
+class NewsFeedScreen extends ConsumerStatefulWidget {
   const NewsFeedScreen({super.key});
 
   @override
-  State<NewsFeedScreen> createState() => _NewsFeedScreenState();
+  ConsumerState<NewsFeedScreen> createState() => _NewsFeedScreenState();
 }
 
-class _NewsFeedScreenState extends State<NewsFeedScreen> {
+class _NewsFeedScreenState extends ConsumerState<NewsFeedScreen> {
   final List<String> filters = [
     'All',
     'Race Results',
@@ -22,6 +23,8 @@ class _NewsFeedScreenState extends State<NewsFeedScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final newsAsync = ref.watch(newsProvider(1));
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -39,13 +42,21 @@ class _NewsFeedScreenState extends State<NewsFeedScreen> {
         children: [
           _buildFilterChips(),
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              itemCount: mockNews.length,
-              itemBuilder: (context, index) {
-                final article = mockNews[index];
-                return _buildNewsCard(article);
-              },
+            child: newsAsync.when(
+              data: (news) => ListView.builder(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                itemCount: news.length,
+                itemBuilder: (context, index) {
+                  final article = news[index];
+                  return _buildNewsCard(article);
+                },
+              ),
+              loading: () => const Center(
+                child: CircularProgressIndicator(color: PitwallTheme.primaryAccent),
+              ),
+              error: (err, stack) => Center(
+                child: Text('News unavailable: $err', style: const TextStyle(color: Colors.white60)),
+              ),
             ),
           ),
         ],
@@ -93,77 +104,83 @@ class _NewsFeedScreenState extends State<NewsFeedScreen> {
     );
   }
 
-  Widget _buildNewsCard(NewsArticle article) {
-    return Opacity(
-      opacity: article.isRead ? 0.6 : 1.0,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: PitwallCard(
-          padding: EdgeInsets.zero,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+  Widget _buildNewsCard(dynamic article) {
+    final String title = article['title'] ?? 'No Title';
+    final String source = article['source'] ?? 'Unknown';
+    final String timeAgo = article['publishedAt'] ?? '';
+    final String? imageUrl = article['urlToImage'];
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: PitwallCard(
+        padding: EdgeInsets.zero,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (imageUrl != null)
               ClipRRect(
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
                 child: Image.network(
-                  article.imageUrl,
+                  imageUrl,
                   height: 180,
                   width: double.infinity,
                   fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    height: 180,
+                    color: PitwallTheme.cardBackground,
+                    child: const Icon(Icons.broken_image, color: Colors.white24),
+                  ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      article.title,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            height: 1.2,
-                          ),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: PitwallTheme.primaryAccent.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(2),
-                              ),
-                              child: Text(
-                                article.source.toUpperCase(),
-                                style: const TextStyle(
-                                  color: PitwallTheme.primaryAccent,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              article.timeAgo,
-                              style: const TextStyle(color: Colors.white60, fontSize: 12),
-                            ),
-                          ],
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          height: 1.2,
                         ),
-                        const Icon(Icons.share_outlined, size: 18, color: Colors.white60),
-                      ],
-                    ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: PitwallTheme.primaryAccent.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                            child: Text(
+                              source.toUpperCase(),
+                              style: const TextStyle(
+                                color: PitwallTheme.primaryAccent,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            timeAgo,
+                            style: const TextStyle(color: Colors.white60, fontSize: 12),
+                          ),
+                        ],
+                      ),
+                      const Icon(Icons.share_outlined, size: 18, color: Colors.white60),
+                    ],
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
-
-
 }
