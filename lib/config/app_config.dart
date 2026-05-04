@@ -19,7 +19,7 @@ class AppConfig {
     brightness: Brightness.dark,
     scaffoldBackgroundColor: background,
     primaryColor: accentRed,
-    cardTheme: const CardTheme(
+    cardTheme: const CardThemeData(
       color: card,
       elevation: 0,
       margin: EdgeInsets.zero,
@@ -34,11 +34,11 @@ class AppConfig {
       displayMedium: GoogleFonts.orbitron(color: textPrimary, fontWeight: FontWeight.bold),
       bodyLarge: GoogleFonts.rajdhani(color: textPrimary),
       bodyMedium: GoogleFonts.rajdhani(color: textPrimary),
-      labelSmall: GoogleFonts.jetbrainsMono(color: textSecondary),
+      labelSmall: GoogleFonts.jetBrainsMono(color: textSecondary),
     ),
   );
 
-  static TextStyle get monoStyle => GoogleFonts.jetbrainsMono();
+  static TextStyle get monoStyle => GoogleFonts.jetBrainsMono();
   static TextStyle get displayStyle => GoogleFonts.orbitron();
   static TextStyle get bodyStyle => GoogleFonts.rajdhani();
 }
