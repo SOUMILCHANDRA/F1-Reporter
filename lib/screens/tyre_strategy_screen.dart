@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../theme/pitwall_theme.dart';
+import '../theme/pitwall_theme.dart';
 import '../widgets/pitwall_widgets.dart';
 
 class StintData {

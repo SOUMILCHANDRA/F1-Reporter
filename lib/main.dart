@@ -1,14 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'theme/pitwall_theme.dart';
-import 'presentation/screens/news_feed_screen.dart';
-import 'presentation/screens/race_hub_screen.dart';
-import 'presentation/screens/standings_screen.dart';
-import 'presentation/screens/calendar_screen.dart';
-import 'presentation/screens/tyre_strategy_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'config/app_config.dart';
+import 'screens/news_feed_screen.dart';
+import 'screens/race_hub_screen.dart';
+import 'screens/standings_screen.dart';
+import 'screens/calendar_screen.dart';
+import 'screens/settings_screen.dart';
+import 'screens/stats_screen.dart';
+import 'services/api_service.dart';
 
-void main() {
-  runApp(const ProviderScope(child: PitwallApp()));
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final prefs = await SharedPreferences.getInstance();
+  
+  runApp(
+    ProviderScope(
+      overrides: [
+        // You could override providers here if needed
+      ],
+      child: const PitwallApp(),
+    ),
+  );
 }
 
 class PitwallApp extends StatelessWidget {
@@ -17,124 +30,103 @@ class PitwallApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Pitwall',
+      title: 'PITWALL',
       debugShowCheckedModeBanner: false,
-      theme: PitwallTheme.darkTheme,
+      theme: AppConfig.darkTheme,
       home: const MainShell(),
     );
   }
 }
 
-class MainShell extends StatefulWidget {
+class MainShell extends ConsumerStatefulWidget {
   const MainShell({super.key});
 
   @override
-  State<MainShell> createState() => _MainShellState();
+  ConsumerState<MainShell> createState() => _MainShellState();
 }
 
-class _MainShellState extends State<MainShell> {
-  int _selectedIndex = 0;
+class _MainShellState extends ConsumerState<MainShell> {
+  int _currentIndex = 0;
+  bool _isOnline = true;
+  final ApiService _apiService = ApiService();
 
   final List<Widget> _screens = [
     const NewsFeedScreen(),
     const RaceHubScreen(),
-    TyreStrategyScreen(),
+    const StatsScreen(),
     const StandingsScreen(),
-    CalendarScreen(),
+    const CalendarScreen(),
   ];
 
   @override
-  Widget build(BuildContext context) {
-    final isDesktop = MediaQuery.of(context).size.width > 900;
+  void initState() {
+    super.initState();
+    _checkConnectivity();
+  }
 
-    if (isDesktop) {
-      return Scaffold(
-        body: Row(
-          children: [
-            _buildNavigationRail(),
-            const VerticalDivider(thickness: 1, width: 1, color: PitwallTheme.cardBorder),
-            Expanded(
-              flex: 7,
-              child: _screens[_selectedIndex],
-            ),
-            const VerticalDivider(thickness: 1, width: 1, color: PitwallTheme.cardBorder),
-            Expanded(
-              flex: 3,
-              child: _buildDetailPanel(),
-            ),
-          ],
-        ),
-      );
+  Future<void> _checkConnectivity() async {
+    final isHealthy = await _apiService.checkHealth();
+    if (mounted) {
+      setState(() => _isOnline = isHealthy);
     }
+  }
 
-    // Mobile uses the BottomNavBar integrated in screens for now, 
-    // but we'll centralize it here in the shell.
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      body: _screens[_selectedIndex],
-      bottomNavigationBar: _buildBottomNav(),
-    );
-  }
-
-  Widget _buildNavigationRail() {
-    return NavigationRail(
-      selectedIndex: _selectedIndex,
-      onDestinationSelected: (index) => setState(() => _selectedIndex = index),
-      backgroundColor: PitwallTheme.background,
-      indicatorColor: PitwallTheme.primaryAccent.withValues(alpha: 0.2),
-      labelType: NavigationRailLabelType.all,
-      selectedLabelTextStyle: const TextStyle(color: PitwallTheme.primaryAccent, fontSize: 12, fontWeight: FontWeight.bold),
-      unselectedLabelTextStyle: const TextStyle(color: Colors.white60, fontSize: 12),
-      destinations: const [
-        NavigationRailDestination(icon: Icon(Icons.article_outlined), label: Text('News')),
-        NavigationRailDestination(icon: Icon(Icons.speed_outlined), label: Text('Race Hub')),
-        NavigationRailDestination(icon: Icon(Icons.api_outlined), label: Text('Strategy')),
-        NavigationRailDestination(icon: Icon(Icons.leaderboard_outlined), label: Text('Standings')),
-        NavigationRailDestination(icon: Icon(Icons.calendar_today_outlined), label: Text('Calendar')),
-      ],
-    );
-  }
-
-  Widget _buildBottomNav() {
-    return Container(
-      decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: PitwallTheme.cardBorder, width: 1)),
-      ),
-      child: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: (index) => setState(() => _selectedIndex = index),
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: PitwallTheme.background,
-        selectedItemColor: PitwallTheme.primaryAccent,
-        unselectedItemColor: Colors.white60,
-        selectedLabelStyle: const TextStyle(fontSize: 10),
-        unselectedLabelStyle: const TextStyle(fontSize: 10),
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.article_outlined), label: 'News'),
-          BottomNavigationBarItem(icon: Icon(Icons.speed_outlined), label: 'Race Hub'),
-          BottomNavigationBarItem(icon: Icon(Icons.api_outlined), label: 'Strategy'),
-          BottomNavigationBarItem(icon: Icon(Icons.leaderboard_outlined), label: 'Standings'),
-          BottomNavigationBarItem(icon: Icon(Icons.calendar_today_outlined), label: 'Calendar'),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDetailPanel() {
-    return Container(
-      color: PitwallTheme.background,
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      body: Stack(
         children: [
-          Text('DETAIL PANEL', style: PitwallTheme.monoStyle.copyWith(color: PitwallTheme.primaryAccent, fontSize: 12)),
-          const SizedBox(height: 24),
-          const Expanded(
-            child: Center(
-              child: Text('Select an item to view details', style: TextStyle(color: Colors.white24)),
-            ),
+          IndexedStack(
+            index: _currentIndex,
+            children: _screens,
           ),
+          if (!_isOnline)
+            Positioned(
+              top: MediaQuery.of(context).padding.top,
+              left: 0,
+              right: 0,
+              child: Container(
+                color: AppConfig.accentRed,
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                alignment: Alignment.center,
+                child: Text(
+                  'BACKEND OFFLINE',
+                  style: AppConfig.monoStyle.copyWith(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (index) => setState(() => _currentIndex = index),
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: AppConfig.surface,
+        selectedItemColor: AppConfig.accentRed,
+        unselectedItemColor: AppConfig.textSecondary,
+        selectedLabelStyle: AppConfig.bodyStyle.copyWith(fontSize: 10, fontWeight: FontWeight.bold),
+        unselectedLabelStyle: AppConfig.bodyStyle.copyWith(fontSize: 10),
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.newspaper), label: 'NEWS'),
+          BottomNavigationBarItem(icon: Icon(Icons.sports_motorsports), label: 'RACE HUB'),
+          BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: 'STATS'),
+          BottomNavigationBarItem(icon: Icon(Icons.emoji_events), label: 'STANDINGS'),
+          BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: 'CALENDAR'),
+        ],
+      ),
+      floatingActionButton: _currentIndex == 0 ? FloatingActionButton(
+        mini: true,
+        backgroundColor: AppConfig.surface,
+        child: const Icon(Icons.settings, color: Colors.white),
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const SettingsScreen()),
+        ).then((_) => _checkConnectivity()),
+      ) : null,
     );
   }
 }
