@@ -8,16 +8,19 @@ A high-performance FastAPI backend for the Pitwall F1 Intelligence app. Serves r
 - **News Integration**: Real-time F1 news via NewsAPI.org.
 - **Optimized Telemetry**: Automatic downsampling of telemetry data to 400 points for mobile performance.
 - **Persistent Caching**: Leverages FastF1's caching system for sub-second responses on repeat requests.
-- **Production-Ready**: Configured for instant deployment on Railway.app.
+- **Production-Ready**: Configured for instant deployment on Render.com.
 
-## 🛠️ Deployment (Railway.app)
+## 🛠️ Deployment (Render.com)
 1. Fork/Clone this repository.
-2. Create a new Project on Railway.
-3. Add a **Nixpacks** build provider.
-4. Set the following Environment Variables:
+2. Create a new **Web Service** on Render.
+3. Connect your GitHub repository.
+4. Render will automatically detect the `render.yaml` (Blueprint) or you can set:
+   - **Runtime**: `Python`
+   - **Build Command**: `pip install -r requirements.txt`
+   - **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
+5. Set the following **Environment Variables**:
    - `NEWS_API_KEY`: Your API key from [newsapi.org](https://newsapi.org).
-   - `PORT`: (Automatically set by Railway).
-5. The `railway.toml` and `Procfile` will handle the rest.
+6. **Note**: The free tier spins down after 15 minutes of inactivity. The first request after a spin-down may take ~30 seconds.
 
 ## 📡 Key Endpoints
 - `GET /health`: System health check.
