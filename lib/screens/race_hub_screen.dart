@@ -61,8 +61,8 @@ class _RaceHubScreenState extends ConsumerState<RaceHubScreen> {
             ],
           ),
           onSelected: (rd) => setState(() => selectedRound = rd),
-          itemBuilder: (context) => events.map((e) => 
-            PopupMenuItem(value: e['round_number'], child: Text('RD ${e['round_number']}: ${e['event_name']}'))
+          itemBuilder: (context) => events.map<PopupMenuEntry<int>>((e) => 
+            PopupMenuItem<int>(value: e['round_number'], child: Text('RD ${e['round_number']}: ${e['event_name']}'))
           ).toList(),
         );
       },
