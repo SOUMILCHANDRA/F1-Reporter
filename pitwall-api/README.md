@@ -20,7 +20,8 @@ A high-performance FastAPI backend for the Pitwall F1 Intelligence app. Serves r
    - **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
 5. Set the following **Environment Variables**:
    - `NEWS_API_KEY`: Your API key from [newsapi.org](https://newsapi.org).
-6. **Note**: The free tier spins down after 15 minutes of inactivity. The first request after a spin-down may take ~30 seconds.
+7. **Keep Alive (Optional)**: To prevent the free tier from spinning down, I've added a GitHub Action. In your GitHub repo settings, go to **Secrets and variables > Actions** and add:
+   - `RENDER_API_URL`: Your deployed Render URL (e.g., `https://pitwall-api.onrender.com`).
 
 ## 📡 Key Endpoints
 - `GET /health`: System health check.
