@@ -203,7 +203,7 @@ class TyresTab extends ConsumerWidget {
           final driver = data[index];
           final List stints = driver['stints'];
           return Padding(
-            padding: const EdgeInsets.bottom(12),
+            padding: const EdgeInsets.only(bottom: 12),
             child: Row(
               children: [
                 SizedBox(width: 40, child: Text(driver['driver_code'], style: AppConfig.monoStyle.copyWith(fontSize: 11))),
