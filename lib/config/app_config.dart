@@ -1,8 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AppConfig {
-  static const String defaultBaseUrl = 'https://f1-reporter.onrender.com';
+  static const String _defaultBaseUrl = 'https://f1-reporter.onrender.com';
+
+  static Future<String> getBaseUrl() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('backend_url') ?? _defaultBaseUrl;
+  }
+
+  static Future<void> setBaseUrl(String url) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('backend_url', url);
+  }
   
   // Colors
   static const Color background = Color(0xFF0A0A0A);
