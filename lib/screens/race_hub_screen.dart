@@ -164,6 +164,8 @@ class _RaceHubScreenState extends ConsumerState<RaceHubScreen> {
       case 'Telemetry': return TelemetryTab(year: selectedYear, round: selectedRound, session: selectedSession);
       case 'Weather': return WeatherTab(year: selectedYear, round: selectedRound, session: selectedSession);
       case 'RC': return RaceControlTab(year: selectedYear, round: selectedRound, session: selectedSession);
+      case 'Fastest': return FastestLapsTab(year: selectedYear, round: selectedRound, sessionName: selectedSession);
+      case 'Pits': return PitStopsTab(year: selectedYear, round: selectedRound, session: selectedSession);
       default: return Center(child: Text('$activeSubTab DATA STREAMING...'));
     }
   }
