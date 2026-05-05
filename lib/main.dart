@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'config/app_config.dart';
 import 'screens/news_feed_screen.dart';
@@ -8,12 +9,9 @@ import 'screens/standings_screen.dart';
 import 'screens/calendar_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/stats_screen.dart';
-import 'services/api_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final prefs = await SharedPreferences.getInstance();
-  
   runApp(
     ProviderScope(
       overrides: [
@@ -48,7 +46,6 @@ class MainShell extends ConsumerStatefulWidget {
 class _MainShellState extends ConsumerState<MainShell> {
   int _currentIndex = 0;
   bool _isOnline = true;
-  final ApiService _apiService = ApiService();
 
   final List<Widget> _screens = [
     const NewsFeedScreen(),
@@ -61,13 +58,42 @@ class _MainShellState extends ConsumerState<MainShell> {
   @override
   void initState() {
     super.initState();
-    _checkConnectivity();
+    _checkBackend();
   }
 
-  Future<void> _checkConnectivity() async {
-    final isHealthy = await _apiService.checkHealth();
+  Future<void> _checkBackend() async {
+    try {
+      final base = await AppConfig.getBaseUrl();
+      final res = await http.get(Uri.parse('$base/health'))
+          .timeout(const Duration(seconds: 60));
+      if (res.statusCode != 200) {
+        _showOfflineBanner('Backend returned error ${res.statusCode}');
+      } else {
+        if (mounted) setState(() => _isOnline = true);
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isOnline = false);
+      _showOfflineBanner('Cannot reach backend: $e — Go to Settings to update URL');
+    }
+  }
+
+  void _showOfflineBanner(String msg) {
     if (mounted) {
-      setState(() => _isOnline = isHealthy);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(msg, style: const TextStyle(color: Colors.white)),
+          backgroundColor: const Color(0xFFE8002D),
+          duration: const Duration(seconds: 8),
+          action: SnackBarAction(
+            label: 'Settings',
+            textColor: Colors.white,
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const SettingsScreen()),
+            ).then((_) => _checkBackend()),
+          ),
+        ),
+      );
     }
   }
 
@@ -125,7 +151,7 @@ class _MainShellState extends ConsumerState<MainShell> {
         onPressed: () => Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const SettingsScreen()),
-        ).then((_) => _checkConnectivity()),
+        ).then((_) => _checkBackend()),
       ) : null,
     );
   }
