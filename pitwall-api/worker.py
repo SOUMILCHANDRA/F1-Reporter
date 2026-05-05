@@ -170,13 +170,128 @@ def sync_race_results(year: int, round_num: int, skip_existing=True):
     except Exception as e:
         logger.error(f"Race results sync failed for {year} Round {round_num}: {e}")
 
+def sync_detailed_data(year: int, round_num: int, skip_existing=True):
+    if skip_existing:
+        # Only skip if we already have telemetry (the last step of detailed sync)
+        res = supabase.table("telemetry").select("id").eq("year", year).eq("round_number", round_num).limit(1).execute()
+        if res.data:
+            return
+
+    logger.info(f"Syncing detailed data for {year} Round {round_num}...")
+    try:
+        s = fastf1.get_session(year, round_num, 'Race')
+        s.load() # Loads laps, telemetry, weather, messages
+        session_start = s.date
+        
+        # 1. Laps
+        laps_data = []
+        for _, row in s.laps.iterrows():
+            laps_data.append({
+                "year": year,
+                "round_number": round_num,
+                "session_type": "Race",
+                "driver_code": row.get("Driver", "UNK"),
+                "lap_number": int(row["LapNumber"]) if pd.notna(row.get("LapNumber")) else 0,
+                "lap_time_ms": to_ms(row.get("LapTime")),
+                "sector1_ms": to_ms(row.get("Sector1Time")),
+                "sector2_ms": to_ms(row.get("Sector2Time")),
+                "sector3_ms": to_ms(row.get("Sector3Time")),
+                "compound": row.get("Compound", "UNKNOWN"),
+                "tyre_life": int(row["TyreLife"]) if pd.notna(row.get("TyreLife")) else 0,
+                "stint": int(row["Stint"]) if pd.notna(row.get("Stint")) else 1,
+                "is_personal_best": bool(row.get("IsPersonalBest", False)),
+                "pit_in_time": to_ms(row.get("PitInTime")),
+                "pit_out_time": to_ms(row.get("PitOutTime")),
+                "track_status": str(row.get("TrackStatus", ""))
+            })
+        if laps_data:
+            for i in range(0, len(laps_data), 500):
+                supabase.table("laps").upsert(laps_data[i:i+500], on_conflict="year,round_number,session_type,driver_code,lap_number").execute()
+        
+        # 2. Weather
+        weather_data = []
+        for _, row in s.weather_data.iterrows():
+            t = row.get("Time")
+            if isinstance(t, pd.Timedelta):
+                abs_time = (session_start + t).isoformat()
+            else:
+                abs_time = t.isoformat() if hasattr(t, "isoformat") else str(t)
+            weather_data.append({
+                "year": year,
+                "round_number": round_num,
+                "session_type": "Race",
+                "time": abs_time,
+                "air_temp": float(row.get("AirTemp", 0)),
+                "track_temp": float(row.get("TrackTemp", 0)),
+                "humidity": float(row.get("Humidity", 0)),
+                "pressure": float(row.get("Pressure", 0)),
+                "wind_speed": float(row.get("WindSpeed", 0)),
+                "wind_direction": int(row.get("WindDirection", 0)),
+                "rainfall": bool(row.get("Rainfall", False))
+            })
+        if weather_data:
+            supabase.table("weather").upsert(weather_data, on_conflict="year,round_number,session_type,time").execute()
+            
+        # 3. Race Control
+        rc_data = []
+        for _, row in s.race_control_messages.iterrows():
+            t = row.get("Time")
+            if isinstance(t, pd.Timedelta):
+                abs_time = (session_start + t).isoformat()
+            else:
+                abs_time = t.isoformat() if hasattr(t, "isoformat") else str(t)
+            rc_data.append({
+                "year": year,
+                "round_number": round_num,
+                "session_type": "Race",
+                "time": abs_time,
+                "lap_number": int(row["Lap"]) if pd.notna(row.get("Lap")) else None,
+                "category": row.get("Category", ""),
+                "message": row.get("Message", ""),
+                "flag": row.get("Flag", ""),
+                "scope": row.get("Scope", ""),
+                "driver_code": row.get("Driver")
+            })
+        if rc_data:
+            supabase.table("race_control").upsert(rc_data, on_conflict="year,round_number,session_type,time,message").execute()
+
+        # 4. Telemetry (Sampled for all drivers)
+        for driver in s.drivers:
+            try:
+                driver_laps = s.laps.pick_driver(driver)
+                if driver_laps.empty: continue
+                tel = driver_laps.get_telemetry()
+                if tel.empty: continue
+                sampled = tel.iloc[::5]
+                tel_json = {
+                    "speed": sampled["Speed"].tolist(),
+                    "rpm": sampled["RPM"].tolist(),
+                    "gear": sampled["nGear"].tolist(),
+                    "throttle": sampled["Throttle"].tolist(),
+                    "brake": sampled["Brake"].tolist()
+                }
+                supabase.table("telemetry").upsert({
+                    "year": year,
+                    "round_number": round_num,
+                    "session_type": "Race",
+                    "driver_code": driver,
+                    "telemetry_data": tel_json
+                }, on_conflict="year,round_number,session_type,driver_code").execute()
+            except Exception as e:
+                logger.warning(f"Telemetry failed for {driver}: {e}")
+                continue
+
+        logger.info(f"Synced detailed data for {year} Round {round_num}.")
+    except Exception as e:
+        logger.error(f"Detailed sync failed for {year} Round {round_num}: {e}")
+
 def run_sync(start_year=2024, end_year=2026):
     for current_year in range(start_year, end_year + 1):
         logger.info(f"--- Syncing Season {current_year} ---")
         sync_schedule(current_year)
         sync_standings(current_year)
         
-        # Sync results for all completed races in the schedule
+        # Sync results and detailed data for all completed races
         res = supabase.table("races").select("round_number,date_race").eq("year", current_year).execute()
         for race in res.data:
             if not race.get("date_race"):
@@ -189,8 +304,9 @@ def run_sync(start_year=2024, end_year=2026):
                 now_utc = datetime.now(timezone.utc)
                 if race_date < now_utc:
                     sync_race_results(current_year, race["round_number"])
+                    sync_detailed_data(current_year, race["round_number"])
             except Exception as e:
-                logger.error(f"Failed to process date for {current_year} Round {race['round_number']}: {e}")
+                logger.error(f"Failed to process {current_year} Round {race['round_number']}: {e}")
         
         # Pause slightly between seasons to be polite to the API
         time.sleep(2)
