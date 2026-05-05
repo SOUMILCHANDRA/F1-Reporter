@@ -6,6 +6,7 @@ from typing import List, Optional
 import requests
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 from supabase import create_client, Client
 
@@ -43,6 +44,26 @@ async def health_check():
         "timestamp": datetime.now().isoformat(),
         "database": "supabase" if supabase else "disconnected"
     }
+
+# Ensure map directories exist and mount static files
+MAPS_DIR = os.path.join(os.path.dirname(__file__), "maps", "posters")
+if not os.path.exists(MAPS_DIR):
+    os.makedirs(MAPS_DIR, exist_ok=True)
+
+app.mount("/static/maps", StaticFiles(directory=MAPS_DIR), name="maps")
+
+@app.get("/map/{race_name}")
+async def get_track_map(race_name: str):
+    # Normalize race name to match generated filename
+    # e.g. "Australian GP" -> "australian_gp_noir.png"
+    filename = f"{race_name.lower().replace(' ', '_')}_noir.png"
+    filepath = os.path.join(MAPS_DIR, filename)
+    
+    if os.path.exists(filepath):
+        return {"url": f"/static/maps/{filename}"}
+    else:
+        # Check if a similar file exists (sometimes names vary slightly)
+        return {"error": "Map not found", "attempted": filename}
 
 @app.get("/news")
 async def get_news(page: int = 1, pageSize: int = 20):
@@ -192,9 +213,9 @@ async def get_telemetry(year: int, round: int, session: str, driver: str):
         raise HTTPException(status_code=500, detail="Database not configured")
     try:
         res = supabase.table("telemetry").select("*").eq("year", year).eq("round_number", round).eq("session_type", session).eq("driver_code", driver).execute()
-        if not res.data:
+        if not res.data or "telemetry_data" not in res.data[0]:
             return {}
-        return res.data[0]
+        return res.data[0]["telemetry_data"]
     except Exception as e:
         logger.error(f"Telemetry failed: {e}")
         raise HTTPException(status_code=404, detail="Telemetry data unavailable")
