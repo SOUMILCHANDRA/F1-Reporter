@@ -151,6 +151,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: Text('VERSION'),
             trailing: Text('1.0.0', style: TextStyle(color: AppConfig.textSecondary)),
           ),
+          const SizedBox(height: 32),
+          _buildSectionHeader('CREDITS'),
+          const ListTile(
+            title: Text('DEVELOPER & OWNER'),
+            trailing: Text('SOUMIL CHANDRA', style: TextStyle(color: AppConfig.textSecondary, fontWeight: FontWeight.bold)),
+          ),
+          const ListTile(
+            title: Text('TEAM'),
+            trailing: Text('PITWALL F1 INTELLIGENCE', style: TextStyle(color: AppConfig.textSecondary)),
+          ),
         ],
       ),
     );
