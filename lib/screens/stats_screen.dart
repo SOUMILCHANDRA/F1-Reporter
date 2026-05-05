@@ -23,6 +23,9 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('DRIVER ANALYTICS', style: AppConfig.displayStyle.copyWith(fontSize: 18)),
+        actions: [
+          _buildYearPicker(),
+        ],
       ),
       body: Column(
         children: [
@@ -36,6 +39,18 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildYearPicker() {
+    return PopupMenuButton<int>(
+      icon: const Icon(Icons.history),
+      onSelected: (year) => setState(() => selectedYear = year),
+      itemBuilder: (context) {
+        final currentYear = DateTime.now().year;
+        final years = List.generate(currentYear - 1950 + 1, (i) => currentYear - i);
+        return years.map((y) => PopupMenuItem(value: y, child: Text(y.toString()))).toList();
+      },
     );
   }
 
@@ -93,7 +108,7 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
               LineChartData(
                 lineBarsData: [
                   LineChartBarData(
-                    spots: (data['evolution'] as List).asMap().entries.map((e) => FlSpot(e.key.toDouble(), e.value.toDouble())).toList(),
+                    spots: (data['evolution'] as List?)?.asMap().entries.map((e) => FlSpot(e.key.toDouble(), e.value.toDouble())).toList() ?? [],
                     color: AppConfig.accentRed,
                     isCurved: true,
                     dotData: const FlDotData(show: true),

@@ -166,8 +166,15 @@ class _TelemetryTabState extends ConsumerState<TelemetryTab> {
   }
 
   Widget _buildTelemetryChart(Map<String, dynamic> d1, Map<String, dynamic> d2) {
-    final spots1 = (d1['speed'] as List).asMap().entries.map((e) => FlSpot(e.key.toDouble(), e.value.toDouble())).toList();
-    final spots2 = (d2['speed'] as List).asMap().entries.map((e) => FlSpot(e.key.toDouble(), e.value.toDouble())).toList();
+    final speed1 = d1['speed'] as List?;
+    final speed2 = d2['speed'] as List?;
+    
+    final spots1 = speed1 != null 
+        ? speed1.asMap().entries.map((e) => FlSpot(e.key.toDouble(), e.value.toDouble())).toList()
+        : <FlSpot>[];
+    final spots2 = speed2 != null 
+        ? speed2.asMap().entries.map((e) => FlSpot(e.key.toDouble(), e.value.toDouble())).toList()
+        : <FlSpot>[];
 
     return PitwallCard(
       child: LineChart(

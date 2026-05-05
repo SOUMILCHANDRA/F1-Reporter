@@ -30,6 +30,9 @@ class _RaceHubScreenState extends ConsumerState<RaceHubScreen> {
     return Scaffold(
       appBar: AppBar(
         title: _buildEventPicker(scheduleAsync),
+        actions: [
+          _buildYearPicker(),
+        ],
       ),
       body: Column(
         children: [
@@ -68,6 +71,21 @@ class _RaceHubScreenState extends ConsumerState<RaceHubScreen> {
       },
       loading: () => const Text('LOADING EVENT...'),
       error: (_, __) => const Text('SELECT EVENT'),
+    );
+  }
+  
+  Widget _buildYearPicker() {
+    return PopupMenuButton<int>(
+      icon: const Icon(Icons.history),
+      onSelected: (year) => setState(() {
+        selectedYear = year;
+        selectedRound = 1; // Reset to round 1 when year changes
+      }),
+      itemBuilder: (context) {
+        final currentYear = DateTime.now().year;
+        final years = List.generate(currentYear - 1950 + 1, (i) => currentYear - i);
+        return years.map((y) => PopupMenuItem(value: y, child: Text(y.toString()))).toList();
+      },
     );
   }
 

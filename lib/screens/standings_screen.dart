@@ -48,9 +48,11 @@ class _StandingsScreenState extends ConsumerState<StandingsScreen> {
     return PopupMenuButton<int>(
       icon: const Icon(Icons.history),
       onSelected: (year) => setState(() => selectedYear = year),
-      itemBuilder: (context) => [2024, 2023, 2022].map((y) => 
-        PopupMenuItem(value: y, child: Text(y.toString()))
-      ).toList(),
+      itemBuilder: (context) {
+        final currentYear = DateTime.now().year;
+        final years = List.generate(currentYear - 1950 + 1, (i) => currentYear - i);
+        return years.map((y) => PopupMenuItem(value: y, child: Text(y.toString()))).toList();
+      },
     );
   }
 

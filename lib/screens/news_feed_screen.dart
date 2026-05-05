@@ -59,8 +59,22 @@ class _NewsFeedScreenState extends ConsumerState<NewsFeedScreen> {
                 data: (news) {
                   final filteredNews = news.where((a) {
                     if (selectedFilter == 'All') return true;
-                    final title = a['title']?.toString().toLowerCase() ?? '';
-                    return title.contains(selectedFilter.toLowerCase());
+                    final title = (a['title']?.toString() ?? '').toLowerCase();
+                    final desc = (a['description']?.toString() ?? '').toLowerCase();
+                    final text = '$title $desc';
+                    
+                    switch (selectedFilter) {
+                      case 'Race Results':
+                        return text.contains('result') || text.contains('winner') || text.contains('podium') || text.contains('grand prix') || text.contains('p1');
+                      case 'Technical':
+                        return text.contains('update') || text.contains('design') || text.contains('engine') || text.contains('chassis') || text.contains('aero') || text.contains('wing');
+                      case 'Drivers':
+                        return text.contains('driver') || text.contains('contract') || text.contains('seat') || text.contains('transfer') || text.contains('move');
+                      case 'Rumours':
+                        return text.contains('rumour') || text.contains('leak') || text.contains('speculation') || text.contains('reportedly') || text.contains('claimed');
+                      default:
+                        return true;
+                    }
                   }).toList();
 
                   return ListView.builder(

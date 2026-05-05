@@ -210,6 +210,82 @@ async def get_weather(year: int, round: int, session: str):
         logger.error(f"Weather failed: {e}")
         raise HTTPException(status_code=404, detail="Weather data unavailable")
 
+@app.get("/driver_season/{year}/{driver}")
+async def get_driver_season(year: int, driver: str):
+    if not supabase:
+        raise HTTPException(status_code=500, detail="Database not configured")
+    try:
+        # Get total points, wins, podiums, and position history
+        res = supabase.table("session_results").select("*").eq("year", year).eq("driver_code", driver).eq("session_type", "Race").execute()
+        
+        results = res.data
+        if not results:
+            return {"total_points": 0, "wins": 0, "podiums": 0, "avg_finish": 0, "evolution": []}
+            
+        total_points = sum(r.get("points", 0) for r in results)
+        wins = sum(1 for r in results if r.get("position") == 1)
+        podiums = sum(1 for r in results if r.get("position") and r.get("position") <= 3)
+        positions = [r.get("position") for r in results if r.get("position")]
+        avg_finish = round(sum(positions) / len(positions), 1) if positions else 0
+        
+        # Points evolution
+        evolution = []
+        running_total = 0
+        for r in sorted(results, key=lambda x: x["round_number"]):
+            running_total += r.get("points", 0)
+            evolution.append(running_total)
+            
+        return {
+            "total_points": total_points,
+            "wins": wins,
+            "podiums": podiums,
+            "avg_finish": avg_finish,
+            "evolution": evolution
+        }
+    except Exception as e:
+        logger.error(f"Driver season stats failed: {e}")
+        raise HTTPException(status_code=404, detail="Stats unavailable")
+
+@app.get("/tyre_strategy/{year}/{round}")
+async def get_tyre_strategy(year: int, round: int):
+    if not supabase:
+        raise HTTPException(status_code=500, detail="Database not configured")
+    try:
+        # In a real scenario, this would come from a dedicated 'stints' or 'laps' table summary
+        # For now, let's group laps to show compound changes
+        res = supabase.table("laps").select("driver_code,lap_number,compound,stint").eq("year", year).eq("round_number", round).eq("session_type", "Race").order("driver_code,lap_number").execute()
+        
+        drivers = {}
+        for row in res.data:
+            dc = row["driver_code"]
+            if dc not in drivers:
+                drivers[dc] = {"driver_code": dc, "stints": []}
+            
+            last_stint = drivers[dc]["stints"][-1] if drivers[dc]["stints"] else None
+            if not last_stint or last_stint["compound"] != row["compound"]:
+                drivers[dc]["stints"].append({
+                    "compound": row["compound"],
+                    "lap_count": 1
+                })
+            else:
+                last_stint["lap_count"] += 1
+                
+        return list(drivers.values())
+    except Exception as e:
+        logger.error(f"Tyre strategy failed: {e}")
+        return []
+
+@app.get("/race_control/{year}/{round}")
+async def get_race_control(year: int, round: int):
+    if not supabase:
+        raise HTTPException(status_code=500, detail="Database not configured")
+    try:
+        res = supabase.table("race_control").select("*").eq("year", year).eq("round_number", round).order("time").execute()
+        return res.data
+    except Exception as e:
+        logger.error(f"Race control failed: {e}")
+        return []
+
 if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 8000))

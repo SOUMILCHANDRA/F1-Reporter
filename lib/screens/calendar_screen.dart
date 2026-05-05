@@ -39,12 +39,27 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('$selectedYear CALENDAR', style: AppConfig.displayStyle.copyWith(fontSize: 20)),
+        actions: [
+          _buildYearPicker(),
+        ],
       ),
       body: scheduleAsync.when(
         data: (events) => _buildScheduleList(events),
         loading: () => const Center(child: CircularProgressIndicator(color: AppConfig.accentRed)),
         error: (err, stack) => const Center(child: Text('Schedule unavailable')),
       ),
+    );
+  }
+
+  Widget _buildYearPicker() {
+    return PopupMenuButton<int>(
+      icon: const Icon(Icons.history),
+      onSelected: (year) => setState(() => selectedYear = year),
+      itemBuilder: (context) {
+        final currentYear = DateTime.now().year;
+        final years = List.generate(currentYear - 1950 + 1, (i) => currentYear - i);
+        return years.map((y) => PopupMenuItem(value: y, child: Text(y.toString()))).toList();
+      },
     );
   }
 
