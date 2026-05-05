@@ -42,6 +42,10 @@ class ApiService {
     return await _get('/results/$year/$round/$session');
   }
 
+  Future<List<dynamic>> getLaps(int year, int round, String session) async {
+    return await _get('/laps/$year/$round/$session');
+  }
+
   Future<List<dynamic>> getSchedule(int year) async {
     return await _get('/schedule/$year');
   }
@@ -67,7 +71,7 @@ class ApiService {
     return await _get('/standings/$type/$year');
   }
 
-  Future<Map<String, dynamic>> getDriverSeason(int year, String driver) async {
-    return await _get('/driver_season/$year/$driver');
+  Future<dynamic> getTrackMap(String raceName) async {
+    return await _get('/map/$raceName');
   }
 }
