@@ -18,7 +18,7 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final seasonAsync = ref.watch(driverSeasonProvider([selectedYear, selectedDriver]));
+    final seasonAsync = ref.watch(driverSeasonProvider((selectedYear, selectedDriver)));
 
     return Scaffold(
       appBar: AppBar(
@@ -68,7 +68,7 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
                   value: selectedDriver,
                   items: ['VER', 'NOR', 'LEC', 'HAM', 'SAI', 'PIA', 'RUS', 'PER', 'ALO']
                       .map((d) => DropdownMenuItem(value: d, child: Text(d, style: AppConfig.monoStyle))).toList(),
-                  onChanged: (v) => setState(() => selectedDriver = v!),
+                  onChanged: (v) => setState(() => selectedDriver = v ?? selectedDriver),
                   dropdownColor: AppConfig.card,
                 ),
               ),
