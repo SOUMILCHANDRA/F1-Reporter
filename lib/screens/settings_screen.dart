@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../config/app_config.dart';
-import '../services/api_service.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -12,7 +12,6 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   final TextEditingController _urlController = TextEditingController();
-  final ApiService _apiService = ApiService();
   bool? _isOnline;
   bool _isTesting = false;
 
@@ -23,18 +22,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _loadUrl() async {
-    final prefs = await SharedPreferences.getInstance();
+    final url = await AppConfig.getBaseUrl();
     setState(() {
-      _urlController.text = prefs.getString('backend_url') ?? AppConfig.defaultBaseUrl;
+      _urlController.text = url;
     });
   }
 
   Future<void> _saveUrl() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('backend_url', _urlController.text);
+    await AppConfig.setBaseUrl(_urlController.text.trim());
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Backend URL saved')),
+        const SnackBar(content: Text('Backend URL saved. Restart app to apply.')),
       );
     }
   }
@@ -45,21 +43,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _isOnline = null;
     });
     
-    // Temporarily save to test
-    final prefs = await SharedPreferences.getInstance();
-    final originalUrl = prefs.getString('backend_url');
-    await prefs.setString('backend_url', _urlController.text);
-    
-    final online = await _apiService.checkHealth();
-    
-    // Restore if not saving
-    if (originalUrl != null) await prefs.setString('backend_url', originalUrl);
-
-    if (mounted) {
-      setState(() {
-        _isOnline = online;
-        _isTesting = false;
-      });
+    try {
+      final res = await http.get(
+        Uri.parse('${_urlController.text.trim()}/health')
+      ).timeout(const Duration(seconds: 60));
+      final ok = res.statusCode == 200;
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(ok ? '✅ Connected!' : '❌ Got status ${res.statusCode}'),
+          backgroundColor: ok ? Colors.green : const Color(0xFFE8002D),
+        ));
+        setState(() {
+          _isOnline = ok;
+          _isTesting = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('❌ Failed: $e'),
+          backgroundColor: const Color(0xFFE8002D),
+        ));
+        setState(() {
+          _isOnline = false;
+          _isTesting = false;
+        });
+      }
     }
   }
 
