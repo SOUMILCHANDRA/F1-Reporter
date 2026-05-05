@@ -23,32 +23,42 @@ final scheduleProvider = FutureProvider.family<List<dynamic>, int>((ref, year) a
   return apiService.getSchedule(year);
 });
 
-final resultsProvider = FutureProvider.family<List<dynamic>, List<dynamic>>((ref, params) async {
+final resultsProvider = FutureProvider.family<List<dynamic>, (int, int, String)>((ref, params) async {
   final apiService = ref.watch(apiServiceProvider);
-  return apiService.getResults(params[0], params[1], params[2]);
+  return apiService.getResults(params.$1, params.$2, params.$3);
 });
 
-final telemetryProvider = FutureProvider.family<Map<String, dynamic>, List<dynamic>>((ref, params) async {
+final lapsProvider = FutureProvider.family<List<dynamic>, (int, int, String)>((ref, params) async {
   final apiService = ref.watch(apiServiceProvider);
-  return apiService.getTelemetry(params[0], params[1], params[2], params[3]);
+  return apiService.getLaps(params.$1, params.$2, params.$3);
 });
 
-final tyreStrategyProvider = FutureProvider.family<List<dynamic>, List<int>>((ref, params) async {
+final telemetryProvider = FutureProvider.family<Map<String, dynamic>, (int, int, String, String)>((ref, params) async {
   final apiService = ref.watch(apiServiceProvider);
-  return apiService.getTyreStrategy(params[0], params[1]);
+  return apiService.getTelemetry(params.$1, params.$2, params.$3, params.$4);
 });
 
-final weatherProvider = FutureProvider.family<Map<String, dynamic>, List<dynamic>>((ref, params) async {
+final tyreStrategyProvider = FutureProvider.family<List<dynamic>, (int, int)>((ref, params) async {
   final apiService = ref.watch(apiServiceProvider);
-  return apiService.getWeather(params[0], params[1], params[2]);
+  return apiService.getTyreStrategy(params.$1, params.$2);
 });
 
-final raceControlProvider = FutureProvider.family<List<dynamic>, List<int>>((ref, params) async {
+final weatherProvider = FutureProvider.family<Map<String, dynamic>, (int, int, String)>((ref, params) async {
   final apiService = ref.watch(apiServiceProvider);
-  return apiService.getRaceControl(params[0], params[1]);
+  return apiService.getWeather(params.$1, params.$2, params.$3);
 });
 
-final driverSeasonProvider = FutureProvider.family<Map<String, dynamic>, List<dynamic>>((ref, params) async {
+final raceControlProvider = FutureProvider.family<List<dynamic>, (int, int)>((ref, params) async {
   final apiService = ref.watch(apiServiceProvider);
-  return apiService.getDriverSeason(params[0], params[1]);
+  return apiService.getRaceControl(params.$1, params.$2);
+});
+
+final driverSeasonProvider = FutureProvider.family<Map<String, dynamic>, (int, String)>((ref, params) async {
+  final apiService = ref.watch(apiServiceProvider);
+  return apiService.getDriverSeason(params.$1, params.$2);
+});
+
+final trackMapProvider = FutureProvider.family<dynamic, String>((ref, raceName) async {
+  final apiService = ref.watch(apiServiceProvider);
+  return apiService.getTrackMap(raceName);
 });
