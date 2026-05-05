@@ -1,18 +1,33 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 import '../config/app_config.dart';
 
 class ApiService {
-  Future<String> getBaseUrl() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('backend_url') ?? AppConfig.defaultBaseUrl;
+  static Future<String> _base() => AppConfig.getBaseUrl();
+
+  static Future<dynamic> _get(String path) async {
+    final base = await _base();
+    final uri = Uri.parse('$base$path');
+    try {
+      final response = await http.get(uri).timeout(const Duration(seconds: 60));
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      } else {
+        throw Exception('HTTP ${response.statusCode}: ${response.body}');
+      }
+    } on TimeoutException {
+      throw Exception('Request timed out. Is the backend running?');
+    } on SocketException {
+      throw Exception('No connection to backend. Check Settings.');
+    }
   }
 
   Future<bool> checkHealth() async {
     try {
-      final baseUrl = await getBaseUrl();
-      final response = await http.get(Uri.parse('$baseUrl/health')).timeout(const Duration(seconds: 5));
+      final base = await _base();
+      final response = await http.get(Uri.parse('$base/health')).timeout(const Duration(seconds: 60));
       return response.statusCode == 200;
     } catch (_) {
       return false;
@@ -20,66 +35,39 @@ class ApiService {
   }
 
   Future<List<dynamic>> getNews({int page = 1, int pageSize = 20}) async {
-    final baseUrl = await getBaseUrl();
-    final response = await http.get(Uri.parse('$baseUrl/news?page=$page&pageSize=$pageSize'));
-    if (response.statusCode == 200) return json.decode(response.body);
-    throw Exception('Failed to load news');
+    return await _get('/news?page=$page&pageSize=$pageSize');
   }
 
   Future<List<dynamic>> getResults(int year, int round, String session) async {
-    final baseUrl = await getBaseUrl();
-    final response = await http.get(Uri.parse('$baseUrl/results/$year/$round/$session'));
-    if (response.statusCode == 200) return json.decode(response.body);
-    throw Exception('Failed to load results');
+    return await _get('/results/$year/$round/$session');
   }
 
   Future<List<dynamic>> getSchedule(int year) async {
-    final baseUrl = await getBaseUrl();
-    final response = await http.get(Uri.parse('$baseUrl/schedule/$year'));
-    if (response.statusCode == 200) return json.decode(response.body);
-    throw Exception('Failed to load schedule');
+    return await _get('/schedule/$year');
   }
 
   Future<Map<String, dynamic>> getTelemetry(int year, int round, String session, String driver) async {
-    final baseUrl = await getBaseUrl();
-    final response = await http.get(Uri.parse('$baseUrl/telemetry/$year/$round/$session/$driver'));
-    if (response.statusCode == 200) return json.decode(response.body);
-    throw Exception('Failed to load telemetry');
+    return await _get('/telemetry/$year/$round/$session/$driver');
   }
 
   Future<List<dynamic>> getTyreStrategy(int year, int round) async {
-    final baseUrl = await getBaseUrl();
-    final response = await http.get(Uri.parse('$baseUrl/tyre_strategy/$year/$round'));
-    if (response.statusCode == 200) return json.decode(response.body);
-    throw Exception('Failed to load tyre strategy');
+    return await _get('/tyre_strategy/$year/$round');
   }
 
   Future<List<dynamic>> getRaceControl(int year, int round) async {
-    final baseUrl = await getBaseUrl();
-    final response = await http.get(Uri.parse('$baseUrl/race_control/$year/$round'));
-    if (response.statusCode == 200) return json.decode(response.body);
-    throw Exception('Failed to load race control messages');
+    return await _get('/race_control/$year/$round');
   }
 
   Future<Map<String, dynamic>> getWeather(int year, int round, String session) async {
-    final baseUrl = await getBaseUrl();
-    final response = await http.get(Uri.parse('$baseUrl/weather/$year/$round/$session'));
-    if (response.statusCode == 200) return json.decode(response.body);
-    throw Exception('Failed to load weather data');
+    return await _get('/weather/$year/$round/$session');
   }
 
   Future<List<dynamic>> getStandings(int year, {bool drivers = true}) async {
-    final baseUrl = await getBaseUrl();
     final type = drivers ? 'drivers' : 'constructors';
-    final response = await http.get(Uri.parse('$baseUrl/standings/$type/$year'));
-    if (response.statusCode == 200) return json.decode(response.body);
-    throw Exception('Failed to load standings');
+    return await _get('/standings/$type/$year');
   }
 
   Future<Map<String, dynamic>> getDriverSeason(int year, String driver) async {
-    final baseUrl = await getBaseUrl();
-    final response = await http.get(Uri.parse('$baseUrl/driver_season/$year/$driver'));
-    if (response.statusCode == 200) return json.decode(response.body);
-    throw Exception('Failed to load driver season stats');
+    return await _get('/driver_season/$year/$driver');
   }
 }
