@@ -124,9 +124,86 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 4),
             decoration: const BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.vertical(bottom: Radius.circular(8))),
-            child: const Center(child: Text('SESSION COMPLETE', style: TextStyle(fontSize: 10, color: Colors.white24))),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text('SESSION COMPLETE', style: TextStyle(fontSize: 10, color: Colors.white24)),
+                const SizedBox(width: 8),
+                IconButton(
+                  icon: const Icon(Icons.map, size: 14, color: AppConfig.accentRed),
+                  onPressed: () => _showTrackMap(event['event_name'].toString()),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  tooltip: 'View Circuit',
+                ),
+              ],
+            ),
+          ),
+          if (!isPast && !isNext) Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: IconButton(
+              icon: const Icon(Icons.map, size: 16, color: Colors.white24),
+              onPressed: () => _showTrackMap(event['event_name'].toString()),
+              tooltip: 'View Circuit',
+            ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showTrackMap(String raceName) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.black,
+      builder: (context) => Consumer(
+        builder: (context, ref, child) {
+          final mapAsync = ref.watch(trackMapProvider(raceName));
+          return Container(
+            height: MediaQuery.of(context).size.height * 0.85,
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(raceName.toUpperCase(), style: AppConfig.displayStyle.copyWith(fontSize: 18)),
+                    IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
+                  ],
+                ),
+                const Divider(color: Colors.white10),
+                Expanded(
+                  child: mapAsync.when(
+                    data: (data) {
+                      if (data['error'] != null) {
+                        return Center(child: Text('Map not available for this circuit', style: TextStyle(color: Colors.white24)));
+                      }
+                      return InteractiveViewer(
+                        child: FutureBuilder<String>(
+                          future: AppConfig.getBaseUrl(),
+                          builder: (context, snap) {
+                            if (!snap.hasData) return const Center(child: CircularProgressIndicator());
+                            return Image.network(
+                              '${snap.data}${data['url']}',
+                              fit: BoxFit.contain,
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return const Center(child: CircularProgressIndicator(color: AppConfig.accentRed));
+                              },
+                            );
+                          },
+                        ),
+                      );
+                    },
+                    loading: () => const Center(child: CircularProgressIndicator(color: AppConfig.accentRed)),
+                    error: (err, _) => Center(child: Text('Error loading map: $err')),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
