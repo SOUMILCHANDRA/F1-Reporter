@@ -55,15 +55,23 @@ app.mount("/static/maps", StaticFiles(directory=MAPS_DIR), name="maps")
 @app.get("/map/{race_name}")
 async def get_track_map(race_name: str):
     # Normalize race name to match generated filename
-    # e.g. "Australian GP" -> "australian_gp_noir.png"
-    filename = f"{race_name.lower().replace(' ', '_')}_noir.png"
+    # e.g. "Australian Grand Prix" -> "australian_gp_noir.png"
+    name = race_name.lower().replace('grand prix', 'gp').replace(' ', '_')
+    filename = f"{name}_noir.png"
     filepath = os.path.join(MAPS_DIR, filename)
     
     if os.path.exists(filepath):
         return {"url": f"/static/maps/{filename}"}
     else:
-        # Check if a similar file exists (sometimes names vary slightly)
+        # Try alternate if it was already gp
+        if "_gp_" in filename:
+            alt_name = filename.replace("_gp_", "_grand_prix_")
+            alt_path = os.path.join(MAPS_DIR, alt_name)
+            if os.path.exists(alt_path):
+                return {"url": f"/static/maps/{alt_name}"}
+                
         return {"error": "Map not found", "attempted": filename}
+
 
 @app.get("/news")
 async def get_news(page: int = 1, pageSize: int = 20):
