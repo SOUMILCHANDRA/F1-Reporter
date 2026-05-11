@@ -255,7 +255,41 @@ def sync_detailed_data(year: int, round_num: int, skip_existing=True):
         if rc_data:
             supabase.table("race_control").upsert(rc_data, on_conflict="year,round_number,session_type,time,message").execute()
 
-        # 4. Telemetry (Sampled for all drivers)
+        # 4. Track Status
+        ts_data = []
+        for _, row in s.track_status.iterrows():
+            t = row.get("Time")
+            if isinstance(t, pd.Timedelta):
+                abs_time = (session_start + t).isoformat()
+            else:
+                abs_time = t.isoformat() if hasattr(t, "isoformat") else str(t)
+            ts_data.append({
+                "year": year,
+                "round_number": round_num,
+                "session_type": "Race",
+                "time": abs_time,
+                "status": str(row.get("Status", "")),
+                "message": str(row.get("Message", ""))
+            })
+        if ts_data:
+            supabase.table("track_status").upsert(ts_data, on_conflict="year,round_number,session_type,time").execute()
+
+        # 5. Circuit Info
+        try:
+            ci = s.get_circuit_info()
+            ci_data = {
+                "year": year,
+                "round_number": round_num,
+                "corners": ci.corners.to_dict(orient="records") if not ci.corners.empty else [],
+                "marshal_lights": ci.marshal_lights.to_dict(orient="records") if not ci.marshal_lights.empty else [],
+                "marshal_sectors": ci.marshal_sectors.to_dict(orient="records") if not ci.marshal_sectors.empty else [],
+                "rotation": float(ci.rotation)
+            }
+            supabase.table("circuit_info").upsert(ci_data, on_conflict="year,round_number").execute()
+        except Exception as e:
+            logger.warning(f"Circuit Info sync failed for {year} Round {round_num}: {e}")
+
+        # 6. Telemetry (Sampled for all drivers)
         for driver in s.drivers:
             try:
                 driver_laps = s.laps.pick_driver(driver)
