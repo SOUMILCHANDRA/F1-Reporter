@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 import 'config/app_config.dart';
 import 'screens/news_feed_screen.dart';
 import 'screens/race_hub_screen.dart';
