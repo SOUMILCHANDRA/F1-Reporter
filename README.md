@@ -1,6 +1,6 @@
 # Pitwall 🏁
 
-**Your personal F1 intelligence dashboard.**
+**Your personal F1 intelligence dashboard. **
 
 Pitwall is a high-fidelity F1 dashboard designed for motorsport enthusiasts who demand a "Bloomberg Terminal" level of data density with a premium, noir-inspired aesthetic. 
 
