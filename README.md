@@ -31,4 +31,4 @@ Pitwall is a high-fidelity F1 dashboard designed for motorsport enthusiasts who 
 4. To build Android APK: `flutter build apk`
 
 ---
-*Designed with Google Stitch and built by Antigravity.*
+
