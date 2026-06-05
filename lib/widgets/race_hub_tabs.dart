@@ -9,7 +9,12 @@ import 'pitwall_widgets.dart';
 class ResultsTab extends ConsumerWidget {
   final int year, round;
   final String session;
-  const ResultsTab({super.key, required this.year, required this.round, required this.session});
+  const ResultsTab({
+    super.key,
+    required this.year,
+    required this.round,
+    required this.session,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -17,7 +22,8 @@ class ResultsTab extends ConsumerWidget {
 
     return resultsAsync.when(
       data: (data) {
-        if (data.isEmpty) return const Center(child: Text('NO RESULTS DATA AVAILABLE'));
+        if (data.isEmpty)
+          return const Center(child: Text('NO RESULTS DATA AVAILABLE'));
         return ListView.builder(
           padding: const EdgeInsets.all(16),
           itemCount: data.length,
@@ -28,16 +34,34 @@ class ResultsTab extends ConsumerWidget {
               margin: const EdgeInsets.only(bottom: 8),
               padding: EdgeInsets.zero,
               child: ListTile(
-                leading: Text(r['position']?.toString() ?? '-', style: AppConfig.displayStyle.copyWith(fontSize: 18)),
-                title: Text(r['full_name'] ?? 'Unknown Driver', style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text(r['team']?.toString().toUpperCase() ?? 'PRIVATEER', style: const TextStyle(fontSize: 10, color: Colors.white60)),
+                leading: Text(
+                  r['position']?.toString() ?? '-',
+                  style: AppConfig.displayStyle.copyWith(fontSize: 18),
+                ),
+                title: Text(
+                  r['full_name'] ?? 'Unknown Driver',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text(
+                  r['team']?.toString().toUpperCase() ?? 'PRIVATEER',
+                  style: const TextStyle(fontSize: 10, color: Colors.white60),
+                ),
                 trailing: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text(_formatTime(r), style: AppConfig.monoStyle.copyWith(fontSize: 11)),
-                    if (r['points'] != null && r['points'] > 0) 
-                      Text('+${r['points']} PTS', style: const TextStyle(fontSize: 10, color: AppConfig.accentGold)),
+                    Text(
+                      _formatTime(r),
+                      style: AppConfig.monoStyle.copyWith(fontSize: 11),
+                    ),
+                    if (r['points'] != null && r['points'] > 0)
+                      Text(
+                        '+${r['points']} PTS',
+                        style: const TextStyle(
+                          fontSize: 10,
+                          color: AppConfig.accentGold,
+                        ),
+                      ),
                   ],
                 ),
                 tileColor: Colors.transparent,
@@ -47,20 +71,31 @@ class ResultsTab extends ConsumerWidget {
           },
         );
       },
-      loading: () => const Center(child: CircularProgressIndicator(color: AppConfig.accentRed)),
-      error: (err, __) => Center(
+      loading: () => const Center(
+        child: CircularProgressIndicator(color: AppConfig.accentRed),
+      ),
+      error: (err, _) => Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, color: AppConfig.accentRed, size: 32),
+            const Icon(
+              Icons.error_outline,
+              color: AppConfig.accentRed,
+              size: 32,
+            ),
             const SizedBox(height: 12),
-            const Text('Results not available', style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text(
+              'Results not available',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 4),
-            Text(err.toString(), style: const TextStyle(color: Colors.white24, fontSize: 10)),
+            Text(
+              err.toString(),
+              style: const TextStyle(color: Colors.white24, fontSize: 10),
+            ),
           ],
         ),
       ),
-
     );
   }
 
@@ -68,20 +103,34 @@ class ResultsTab extends ConsumerWidget {
     showModalBottomSheet(
       context: context,
       backgroundColor: AppConfig.surface,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
       builder: (context) => Container(
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(driver['full_name']?.toString().toUpperCase() ?? 'DRIVER', style: AppConfig.displayStyle.copyWith(fontSize: 20)),
-            Text(driver['team'] ?? 'Team', style: TextStyle(color: _hexToColor(driver['team_color']), fontWeight: FontWeight.bold)),
+            Text(
+              driver['full_name']?.toString().toUpperCase() ?? 'DRIVER',
+              style: AppConfig.displayStyle.copyWith(fontSize: 20),
+            ),
+            Text(
+              driver['team'] ?? 'Team',
+              style: TextStyle(
+                color: _hexToColor(driver['team_color']),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             const Divider(height: 32, color: AppConfig.border),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _detailStat('GRID', driver['grid_position']?.toString() ?? 'N/A'),
+                _detailStat(
+                  'GRID',
+                  driver['grid_position']?.toString() ?? 'N/A',
+                ),
                 _detailStat('FINISH', driver['position']?.toString() ?? 'N/A'),
                 _detailStat('POINTS', driver['points']?.toString() ?? '0'),
               ],
@@ -90,7 +139,9 @@ class ResultsTab extends ConsumerWidget {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: AppConfig.accentRed),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppConfig.accentRed,
+                ),
                 onPressed: () => Navigator.pop(context),
                 child: const Text('CLOSE'),
               ),
@@ -104,8 +155,17 @@ class ResultsTab extends ConsumerWidget {
   Widget _detailStat(String label, String value) {
     return Column(
       children: [
-        Text(label, style: const TextStyle(color: Colors.white24, fontSize: 10)),
-        Text(value, style: AppConfig.monoStyle.copyWith(fontSize: 18, fontWeight: FontWeight.bold)),
+        Text(
+          label,
+          style: const TextStyle(color: Colors.white24, fontSize: 10),
+        ),
+        Text(
+          value,
+          style: AppConfig.monoStyle.copyWith(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ],
     );
   }
@@ -127,7 +187,12 @@ class ResultsTab extends ConsumerWidget {
 class TelemetryTab extends ConsumerStatefulWidget {
   final int year, round;
   final String session;
-  const TelemetryTab({super.key, required this.year, required this.round, required this.session});
+  const TelemetryTab({
+    super.key,
+    required this.year,
+    required this.round,
+    required this.session,
+  });
 
   @override
   ConsumerState<TelemetryTab> createState() => _TelemetryTabState();
@@ -139,18 +204,37 @@ class _TelemetryTabState extends ConsumerState<TelemetryTab> {
 
   @override
   Widget build(BuildContext context) {
-    final resultsAsync = ref.watch(resultsProvider((widget.year, widget.round, widget.session)));
-    
+    final resultsAsync = ref.watch(
+      resultsProvider((widget.year, widget.round, widget.session)),
+    );
+
     return resultsAsync.when(
       data: (results) {
-        if (results.isEmpty) return const Center(child: Text('NO DRIVERS AVAILABLE'));
-        
-        final drivers = results.map((r) => r['driver_code']?.toString() ?? '???').toList();
+        if (results.isEmpty)
+          return const Center(child: Text('NO DRIVERS AVAILABLE'));
+
+        final drivers = results
+            .map((r) => r['driver_code']?.toString() ?? '???')
+            .toList();
         driver1 ??= drivers.first;
         driver2 ??= drivers.length > 1 ? drivers[1] : drivers.first;
 
-        final t1Async = ref.watch(telemetryProvider((widget.year, widget.round, widget.session, driver1!)));
-        final t2Async = ref.watch(telemetryProvider((widget.year, widget.round, widget.session, driver2!)));
+        final t1Async = ref.watch(
+          telemetryProvider((
+            widget.year,
+            widget.round,
+            widget.session,
+            driver1!,
+          )),
+        );
+        final t2Async = ref.watch(
+          telemetryProvider((
+            widget.year,
+            widget.round,
+            widget.session,
+            driver2!,
+          )),
+        );
 
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16),
@@ -165,16 +249,22 @@ class _TelemetryTabState extends ConsumerState<TelemetryTab> {
                     data: (d2) {
                       final s1 = d1['speed'] as List?;
                       final s2 = d2['speed'] as List?;
-                      if ((s1 == null || s1.isEmpty) && (s2 == null || s2.isEmpty)) {
-                        return const Center(child: Text('NO TELEMETRY DATA AVAILABLE'));
+                      if ((s1 == null || s1.isEmpty) &&
+                          (s2 == null || s2.isEmpty)) {
+                        return const Center(
+                          child: Text('NO TELEMETRY DATA AVAILABLE'),
+                        );
                       }
                       return _buildTelemetryChart(d1, d2);
                     },
-                    loading: () => const Center(child: CircularProgressIndicator()),
-                    error: (_, __) => const Center(child: Text('Compare Data Error')),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (_, _) =>
+                        const Center(child: Text('Compare Data Error')),
                   ),
-                  loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (_, __) => const Center(child: Text('Telemetry Error')),
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (_, _) => const Center(child: Text('Telemetry Error')),
                 ),
               ),
             ],
@@ -182,31 +272,57 @@ class _TelemetryTabState extends ConsumerState<TelemetryTab> {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (err, __) => Center(child: Text('Drivers list unavailable: $err')),
+      error: (err, _) => Center(child: Text('Drivers list unavailable: $err')),
     );
   }
 
   Widget _buildDriverSelectors(List<String> drivers) {
     return Row(
       children: [
-        Expanded(child: _driverDropdown(driver1!, drivers, (v) => setState(() => driver1 = v))),
+        Expanded(
+          child: _driverDropdown(
+            driver1!,
+            drivers,
+            (v) => setState(() => driver1 = v),
+          ),
+        ),
         const SizedBox(width: 16),
         const Text('VS', style: TextStyle(color: Colors.white24)),
         const SizedBox(width: 16),
-        Expanded(child: _driverDropdown(driver2!, drivers, (v) => setState(() => driver2 = v))),
+        Expanded(
+          child: _driverDropdown(
+            driver2!,
+            drivers,
+            (v) => setState(() => driver2 = v),
+          ),
+        ),
       ],
     );
   }
 
-  Widget _driverDropdown(String value, List<String> drivers, ValueChanged<String?>? onChange) {
+  Widget _driverDropdown(
+    String value,
+    List<String> drivers,
+    ValueChanged<String?>? onChange,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12),
-      decoration: BoxDecoration(color: AppConfig.card, borderRadius: BorderRadius.circular(4), border: Border.all(color: AppConfig.border)),
+      decoration: BoxDecoration(
+        color: AppConfig.card,
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: AppConfig.border),
+      ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: drivers.contains(value) ? value : drivers.first,
           items: drivers
-              .map((d) => DropdownMenuItem(value: d, child: Text(d, style: AppConfig.monoStyle))).toList(),
+              .map(
+                (d) => DropdownMenuItem(
+                  value: d,
+                  child: Text(d, style: AppConfig.monoStyle),
+                ),
+              )
+              .toList(),
           onChanged: onChange,
           dropdownColor: AppConfig.card,
         ),
@@ -214,23 +330,54 @@ class _TelemetryTabState extends ConsumerState<TelemetryTab> {
     );
   }
 
-  Widget _buildTelemetryChart(Map<String, dynamic> d1, Map<String, dynamic> d2) {
+  Widget _buildTelemetryChart(
+    Map<String, dynamic> d1,
+    Map<String, dynamic> d2,
+  ) {
     final speed1 = d1['speed'] as List?;
     final speed2 = d2['speed'] as List?;
-    
-    final spots1 = speed1 != null 
-        ? speed1.asMap().entries.map((e) => FlSpot(e.key.toDouble(), (e.value as num?)?.toDouble() ?? 0.0)).toList()
+
+    final spots1 = speed1 != null
+        ? speed1
+              .asMap()
+              .entries
+              .map(
+                (e) => FlSpot(
+                  e.key.toDouble(),
+                  (e.value as num?)?.toDouble() ?? 0.0,
+                ),
+              )
+              .toList()
         : <FlSpot>[];
-    final spots2 = speed2 != null 
-        ? speed2.asMap().entries.map((e) => FlSpot(e.key.toDouble(), (e.value as num?)?.toDouble() ?? 0.0)).toList()
+    final spots2 = speed2 != null
+        ? speed2
+              .asMap()
+              .entries
+              .map(
+                (e) => FlSpot(
+                  e.key.toDouble(),
+                  (e.value as num?)?.toDouble() ?? 0.0,
+                ),
+              )
+              .toList()
         : <FlSpot>[];
 
     return PitwallCard(
       child: LineChart(
         LineChartData(
           lineBarsData: [
-            LineChartBarData(spots: spots1, color: Colors.blue, barWidth: 1, dotData: const FlDotData(show: false)),
-            LineChartBarData(spots: spots2, color: Colors.orange, barWidth: 1, dotData: const FlDotData(show: false)),
+            LineChartBarData(
+              spots: spots1,
+              color: Colors.blue,
+              barWidth: 1,
+              dotData: const FlDotData(show: false),
+            ),
+            LineChartBarData(
+              spots: spots2,
+              color: Colors.orange,
+              barWidth: 1,
+              dotData: const FlDotData(show: false),
+            ),
           ],
           titlesData: const FlTitlesData(show: false),
           gridData: const FlGridData(show: true, drawVerticalLine: false),
@@ -245,7 +392,12 @@ class _TelemetryTabState extends ConsumerState<TelemetryTab> {
 class TyresTab extends ConsumerWidget {
   final int year, round;
   final String session;
-  const TyresTab({super.key, required this.year, required this.round, required this.session});
+  const TyresTab({
+    super.key,
+    required this.year,
+    required this.round,
+    required this.session,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -253,7 +405,8 @@ class TyresTab extends ConsumerWidget {
 
     return strategyAsync.when(
       data: (data) {
-        if (data.isEmpty) return const Center(child: Text('NO STRATEGY DATA AVAILABLE'));
+        if (data.isEmpty)
+          return const Center(child: Text('NO STRATEGY DATA AVAILABLE'));
         return ListView.builder(
           padding: const EdgeInsets.all(16),
           itemCount: data.length,
@@ -264,19 +417,39 @@ class TyresTab extends ConsumerWidget {
               padding: const EdgeInsets.only(bottom: 12),
               child: Row(
                 children: [
-                  SizedBox(width: 40, child: Text(driver['driver_code'] ?? '???', style: AppConfig.monoStyle.copyWith(fontSize: 11))),
+                  SizedBox(
+                    width: 40,
+                    child: Text(
+                      driver['driver_code'] ?? '???',
+                      style: AppConfig.monoStyle.copyWith(fontSize: 11),
+                    ),
+                  ),
                   Expanded(
                     child: Container(
                       height: 20,
-                      decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(2)),
+                      decoration: BoxDecoration(
+                        color: Colors.white10,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
                       child: Row(
-                        children: stints.map((s) => Expanded(
-                          flex: (s['lap_count'] as num?)?.toInt() ?? 1,
-                          child: Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 1),
-                            decoration: BoxDecoration(color: _getCompoundColor(s['compound']?.toString() ?? 'UNKNOWN'), borderRadius: BorderRadius.circular(1)),
-                          ),
-                        )).toList(),
+                        children: stints
+                            .map(
+                              (s) => Expanded(
+                                flex: (s['lap_count'] as num?)?.toInt() ?? 1,
+                                child: Container(
+                                  margin: const EdgeInsets.symmetric(
+                                    horizontal: 1,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: _getCompoundColor(
+                                      s['compound']?.toString() ?? 'UNKNOWN',
+                                    ),
+                                    borderRadius: BorderRadius.circular(1),
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
                       ),
                     ),
                   ),
@@ -287,7 +460,8 @@ class TyresTab extends ConsumerWidget {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (err, __) => Center(child: Text('Tyre strategy not available: $err')),
+      error: (err, _) =>
+          Center(child: Text('Tyre strategy not available: $err')),
     );
   }
 
@@ -305,7 +479,12 @@ class TyresTab extends ConsumerWidget {
 class WeatherTab extends ConsumerWidget {
   final int year, round;
   final String session;
-  const WeatherTab({super.key, required this.year, required this.round, required this.session});
+  const WeatherTab({
+    super.key,
+    required this.year,
+    required this.round,
+    required this.session,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -313,12 +492,13 @@ class WeatherTab extends ConsumerWidget {
 
     return weatherAsync.when(
       data: (data) {
-        if (data == null || (data is Map && data.isEmpty)) return const Center(child: Text('NO WEATHER DATA AVAILABLE'));
+        if ((data.isEmpty))
+          return const Center(child: Text('NO WEATHER DATA AVAILABLE'));
         final airTemp = data['air_temp'] ?? 'N/A';
         final trackTemp = data['track_temp'] ?? 'N/A';
         final humidity = data['humidity'] ?? 'N/A';
         final windSpeed = data['wind_speed'] ?? 'N/A';
-        
+
         return Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -343,7 +523,7 @@ class WeatherTab extends ConsumerWidget {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (err, __) => Center(child: Text('Weather not available: $err')),
+      error: (err, _) => Center(child: Text('Weather not available: $err')),
     );
   }
 
@@ -355,8 +535,17 @@ class WeatherTab extends ConsumerWidget {
           children: [
             Icon(icon, color: AppConfig.accentRed, size: 20),
             const SizedBox(height: 8),
-            Text(label, style: const TextStyle(fontSize: 10, color: Colors.white24)),
-            Text(value, style: AppConfig.monoStyle.copyWith(fontSize: 16, fontWeight: FontWeight.bold)),
+            Text(
+              label,
+              style: const TextStyle(fontSize: 10, color: Colors.white24),
+            ),
+            Text(
+              value,
+              style: AppConfig.monoStyle.copyWith(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ],
         ),
       ),
@@ -368,7 +557,12 @@ class WeatherTab extends ConsumerWidget {
 class RaceControlTab extends ConsumerWidget {
   final int year, round;
   final String session;
-  const RaceControlTab({super.key, required this.year, required this.round, required this.session});
+  const RaceControlTab({
+    super.key,
+    required this.year,
+    required this.round,
+    required this.session,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -376,7 +570,8 @@ class RaceControlTab extends ConsumerWidget {
 
     return rcAsync.when(
       data: (data) {
-        if (data.isEmpty) return const Center(child: Text('NO RACE CONTROL MESSAGES'));
+        if (data.isEmpty)
+          return const Center(child: Text('NO RACE CONTROL MESSAGES'));
         return ListView.builder(
           padding: const EdgeInsets.all(16),
           itemCount: data.length,
@@ -385,19 +580,42 @@ class RaceControlTab extends ConsumerWidget {
             return Container(
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: AppConfig.card, border: Border(left: BorderSide(color: _getRCColor(msg['category']), width: 4))),
+              decoration: BoxDecoration(
+                color: AppConfig.card,
+                border: Border(
+                  left: BorderSide(
+                    color: _getRCColor(msg['category']),
+                    width: 4,
+                  ),
+                ),
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('LAP ${msg['lap'] ?? 'N/A'}', style: AppConfig.monoStyle.copyWith(fontSize: 10, color: AppConfig.accentRed)),
-                      Text(msg['time'] ?? '', style: const TextStyle(fontSize: 10, color: Colors.white24)),
+                      Text(
+                        'LAP ${msg['lap'] ?? 'N/A'}',
+                        style: AppConfig.monoStyle.copyWith(
+                          fontSize: 10,
+                          color: AppConfig.accentRed,
+                        ),
+                      ),
+                      Text(
+                        msg['time'] ?? '',
+                        style: const TextStyle(
+                          fontSize: 10,
+                          color: Colors.white24,
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 4),
-                  Text(msg['message'] ?? '---', style: const TextStyle(fontSize: 12)),
+                  Text(
+                    msg['message'] ?? '---',
+                    style: const TextStyle(fontSize: 12),
+                  ),
                 ],
               ),
             );
@@ -405,7 +623,8 @@ class RaceControlTab extends ConsumerWidget {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (err, __) => Center(child: Text('Race Control not available: $err')),
+      error: (err, _) =>
+          Center(child: Text('Race Control not available: $err')),
     );
   }
 
@@ -422,7 +641,12 @@ class RaceControlTab extends ConsumerWidget {
 class LapsTab extends ConsumerWidget {
   final int year, round;
   final String session;
-  const LapsTab({super.key, required this.year, required this.round, required this.session});
+  const LapsTab({
+    super.key,
+    required this.year,
+    required this.round,
+    required this.session,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -430,7 +654,8 @@ class LapsTab extends ConsumerWidget {
 
     return lapsAsync.when(
       data: (data) {
-        if (data.isEmpty) return const Center(child: Text('NO LAP DATA AVAILABLE'));
+        if (data.isEmpty)
+          return const Center(child: Text('NO LAP DATA AVAILABLE'));
         return ListView.builder(
           padding: const EdgeInsets.all(16),
           itemCount: data.length,
@@ -438,29 +663,55 @@ class LapsTab extends ConsumerWidget {
             final driver = data[index];
             final List laps = driver['laps'] ?? [];
             final lastLap = laps.isNotEmpty ? laps.last : null;
-            
+
             return PitwallCard(
               margin: const EdgeInsets.only(bottom: 8),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Row(
                 children: [
-                  SizedBox(width: 40, child: Text(driver['driver_code'] ?? '???', style: AppConfig.monoStyle.copyWith(fontWeight: FontWeight.bold))),
+                  SizedBox(
+                    width: 40,
+                    child: Text(
+                      driver['driver_code'] ?? '???',
+                      style: AppConfig.monoStyle.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('LAPS COMPLETED: ${laps.length}', style: const TextStyle(fontSize: 12)),
+                        Text(
+                          'LAPS COMPLETED: ${laps.length}',
+                          style: const TextStyle(fontSize: 12),
+                        ),
                         if (lastLap != null && lastLap['lap_time_ms'] != null)
-                          Text('LAST: ${_durationToString(lastLap['lap_time_ms'])}', style: const TextStyle(fontSize: 10, color: Colors.white24)),
+                          Text(
+                            'LAST: ${_durationToString(lastLap['lap_time_ms'])}',
+                            style: const TextStyle(
+                              fontSize: 10,
+                              color: Colors.white24,
+                            ),
+                          ),
                       ],
                     ),
                   ),
                   if (laps.isNotEmpty)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(4)),
-                      child: Text('STINT ${laps.last['stint'] ?? 1}', style: const TextStyle(fontSize: 9)),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white10,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        'STINT ${laps.last['stint'] ?? 1}',
+                        style: const TextStyle(fontSize: 9),
+                      ),
                     ),
                 ],
               ),
@@ -468,8 +719,10 @@ class LapsTab extends ConsumerWidget {
           },
         );
       },
-      loading: () => const Center(child: CircularProgressIndicator(color: AppConfig.accentRed)),
-      error: (err, __) => Center(child: Text('Lap data unavailable: $err')),
+      loading: () => const Center(
+        child: CircularProgressIndicator(color: AppConfig.accentRed),
+      ),
+      error: (err, _) => Center(child: Text('Lap data unavailable: $err')),
     );
   }
 }
@@ -478,7 +731,12 @@ class LapsTab extends ConsumerWidget {
 class FastestLapsTab extends ConsumerWidget {
   final int year, round;
   final String sessionName;
-  const FastestLapsTab({super.key, required this.year, required this.round, required this.sessionName});
+  const FastestLapsTab({
+    super.key,
+    required this.year,
+    required this.round,
+    required this.sessionName,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -486,11 +744,19 @@ class FastestLapsTab extends ConsumerWidget {
 
     return resultsAsync.when(
       data: (data) {
-        if (data.isEmpty) return const Center(child: Text('NO DATA FOR THIS SESSION'));
-        final fastest = data.where((r) => r['fastest_lap_time'] != null).toList();
-        fastest.sort((a, b) => (a['fastest_lap_time'] as num).compareTo(b['fastest_lap_time'] as num));
+        if (data.isEmpty)
+          return const Center(child: Text('NO DATA FOR THIS SESSION'));
+        final fastest = data
+            .where((r) => r['fastest_lap_time'] != null)
+            .toList();
+        fastest.sort(
+          (a, b) => (a['fastest_lap_time'] as num).compareTo(
+            b['fastest_lap_time'] as num,
+          ),
+        );
 
-        if (fastest.isEmpty) return const Center(child: Text('NO FASTEST LAPS RECORDED'));
+        if (fastest.isEmpty)
+          return const Center(child: Text('NO FASTEST LAPS RECORDED'));
 
         return ListView.builder(
           padding: const EdgeInsets.all(16),
@@ -500,16 +766,28 @@ class FastestLapsTab extends ConsumerWidget {
             return PitwallCard(
               margin: const EdgeInsets.only(bottom: 8),
               child: ListTile(
-                leading: Text('${index + 1}', style: AppConfig.displayStyle.copyWith(fontSize: 16, color: index == 0 ? AppConfig.accentGold : Colors.white)),
+                leading: Text(
+                  '${index + 1}',
+                  style: AppConfig.displayStyle.copyWith(
+                    fontSize: 16,
+                    color: index == 0 ? AppConfig.accentGold : Colors.white,
+                  ),
+                ),
                 title: Text(r['full_name'] ?? 'Unknown'),
-                trailing: Text(_durationToString(r['fastest_lap_time']), style: AppConfig.monoStyle.copyWith(color: AppConfig.accentRed)),
+                trailing: Text(
+                  _durationToString(r['fastest_lap_time']),
+                  style: AppConfig.monoStyle.copyWith(
+                    color: AppConfig.accentRed,
+                  ),
+                ),
               ),
             );
           },
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (err, __) => Center(child: Text('Fastest lap data unavailable: $err')),
+      error: (err, _) =>
+          Center(child: Text('Fastest lap data unavailable: $err')),
     );
   }
 }
@@ -518,7 +796,12 @@ class FastestLapsTab extends ConsumerWidget {
 class PitStopsTab extends ConsumerWidget {
   final int year, round;
   final String session;
-  const PitStopsTab({super.key, required this.year, required this.round, required this.session});
+  const PitStopsTab({
+    super.key,
+    required this.year,
+    required this.round,
+    required this.session,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -526,7 +809,8 @@ class PitStopsTab extends ConsumerWidget {
 
     return lapsAsync.when(
       data: (data) {
-        if (data.isEmpty) return const Center(child: Text('NO PIT STOP DATA AVAILABLE'));
+        if (data.isEmpty)
+          return const Center(child: Text('NO PIT STOP DATA AVAILABLE'));
         final List pitStops = [];
         for (var driver in data) {
           final List laps = driver['laps'] ?? [];
@@ -542,7 +826,8 @@ class PitStopsTab extends ConsumerWidget {
         }
         pitStops.sort((a, b) => (a['lap'] as int).compareTo(b['lap'] as int));
 
-        if (pitStops.isEmpty) return const Center(child: Text('NO PIT STOPS RECORDED'));
+        if (pitStops.isEmpty)
+          return const Center(child: Text('NO PIT STOPS RECORDED'));
 
         return ListView.builder(
           padding: const EdgeInsets.all(16),
@@ -554,9 +839,17 @@ class PitStopsTab extends ConsumerWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(p['driver_code'] ?? '???', style: AppConfig.monoStyle.copyWith(fontWeight: FontWeight.bold)),
+                  Text(
+                    p['driver_code'] ?? '???',
+                    style: AppConfig.monoStyle.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   Text('LAP ${p['lap'] ?? '-'}'),
-                  Text('IN AT: ${p['time'] ?? 'N/A'}', style: const TextStyle(color: Colors.white60, fontSize: 11)),
+                  Text(
+                    'IN AT: ${p['time'] ?? 'N/A'}',
+                    style: const TextStyle(color: Colors.white60, fontSize: 11),
+                  ),
                 ],
               ),
             );
@@ -564,7 +857,7 @@ class PitStopsTab extends ConsumerWidget {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (err, __) => Center(child: Text('Pit stop data unavailable: $err')),
+      error: (err, _) => Center(child: Text('Pit stop data unavailable: $err')),
     );
   }
 }
@@ -577,9 +870,10 @@ String _durationToString(num? ms) {
   final m = duration.inMinutes.remainder(60);
   final s = duration.inSeconds.remainder(60);
   final mm = ms.toInt().remainder(1000);
-  
-  if (h > 0) return '${h}:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}.${mm.toString().padLeft(3, '0')}';
-  return '${m}:${s.toString().padLeft(2, '0')}.${mm.toString().padLeft(3, '0')}';
+
+  if (h > 0)
+    return '$h:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}.${mm.toString().padLeft(3, '0')}';
+  return '$m:${s.toString().padLeft(2, '0')}.${mm.toString().padLeft(3, '0')}';
 }
 
 Color _hexToColor(String? hex) {
