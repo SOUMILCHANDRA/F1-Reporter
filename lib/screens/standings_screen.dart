@@ -36,7 +36,22 @@ class _StandingsScreenState extends ConsumerState<StandingsScreen> {
             child: standingsAsync.when(
               data: (data) => _buildStandingsList(data),
               loading: () => const Center(child: CircularProgressIndicator(color: AppConfig.accentRed)),
-              error: (err, stack) => Center(child: Text('Standings unavailable')),
+              error: (err, stack) => Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline, color: AppConfig.accentRed, size: 40),
+                    const SizedBox(height: 16),
+                    const Text('Standings unavailable', style: TextStyle(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 32),
+                      child: Text(err.toString(), textAlign: TextAlign.center, style: const TextStyle(color: Colors.white24, fontSize: 10)),
+                    ),
+                  ],
+                ),
+              ),
+
             ),
           ),
         ],
@@ -87,7 +102,8 @@ class _StandingsScreenState extends ConsumerState<StandingsScreen> {
 
   Widget _buildStandingsList(List<dynamic> list) {
     if (list.isEmpty) return const Center(child: Text('No data found'));
-    final double maxPoints = (list[0]['points'] as num).toDouble();
+    final double maxPoints = (list[0]['points'] as num?)?.toDouble() ?? 0.0;
+
 
     return ListView.builder(
       padding: const EdgeInsets.all(16),

@@ -75,46 +75,23 @@ async def get_track_map(race_name: str):
 
 @app.get("/news")
 async def get_news(page: int = 1, pageSize: int = 20):
-    if not NEWS_API_KEY:
-        return {"error": "News API key not configured"}
-    
-    # Last 48 hours
-    from_date = (datetime.now() - timedelta(hours=48)).strftime("%Y-%m-%dT%H:%M:%S")
-    
-    url = "https://newsapi.org/v2/everything"
-    params = {
-        "q": "Formula 1 OR F1 OR Grand Prix OR MotoGP",
-        "language": "en",
-        "sortBy": "publishedAt",
-        "from": from_date,
-        "page": page,
-        "pageSize": pageSize,
-        "apiKey": NEWS_API_KEY
-    }
-    
+    if not supabase:
+        raise HTTPException(status_code=500, detail="Database not configured")
     try:
-        response = requests.get(url, params=params)
-        data = response.json()
-        
-        if data.get("status") != "ok":
-            logger.error(f"NewsAPI Error: {data}")
-            raise HTTPException(status_code=503, detail="News unavailable")
-            
-        articles = []
-        for item in data.get("articles", []):
-            articles.append({
-                "title": item.get("title"),
-                "source": item.get("source", {}).get("name"),
-                "url": item.get("url"),
-                "urlToImage": item.get("urlToImage"),
-                "description": item.get("description"),
-                "publishedAt": item.get("publishedAt"),
-                "author": item.get("author")
-            })
-        return articles
+        offset = (page - 1) * pageSize
+        res = supabase.table("f1_news").select("*").order("publishedAt", desc=True).range(offset, offset + pageSize - 1).execute()
+        return res.data
     except Exception as e:
         logger.error(f"News fetch failed: {e}")
         raise HTTPException(status_code=503, detail="News unavailable")
+
+@app.post("/trigger_news_update")
+async def trigger_news_update():
+    from rss_scraper import fetch_and_filter_news
+    result = fetch_and_filter_news()
+    if result and result.get("status") == "error":
+        raise HTTPException(status_code=500, detail=result.get("detail"))
+    return result
 
 @app.get("/schedule/{year}")
 async def get_schedule(year: int):

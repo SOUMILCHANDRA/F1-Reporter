@@ -52,3 +52,5 @@ graphify-out/
 AGENT.md
 CLAUDE.md
 commit_swarm.py
+cache/
+pitwall-api/.env

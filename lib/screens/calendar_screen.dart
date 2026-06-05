@@ -46,8 +46,29 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       body: scheduleAsync.when(
         data: (events) => _buildScheduleList(events),
         loading: () => const Center(child: CircularProgressIndicator(color: AppConfig.accentRed)),
-        error: (err, stack) => const Center(child: Text('Schedule unavailable')),
+        error: (err, stack) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, color: AppConfig.accentRed, size: 48),
+              const SizedBox(height: 16),
+              Text('Schedule unavailable', style: AppConfig.displayStyle.copyWith(fontSize: 16)),
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Text(err.toString(), textAlign: TextAlign.center, style: const TextStyle(color: Colors.white24, fontSize: 12)),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: AppConfig.accentRed),
+                onPressed: () => ref.refresh(scheduleProvider(selectedYear)),
+                child: const Text('RETRY'),
+              ),
+            ],
+          ),
+        ),
       ),
+
     );
   }
 
@@ -70,8 +91,12 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       itemBuilder: (context, index) {
         final event = events[index];
         final raceDate = DateTime.parse(event['date_race'] ?? DateTime.now().toIso8601String());
+        final prevRaceDateStr = index > 0 ? events[index - 1]['date_race'] : null;
+        final prevRaceDate = prevRaceDateStr != null ? DateTime.parse(prevRaceDateStr) : null;
+        
         final isNext = raceDate.isAfter(DateTime.now()) && 
-            (index == 0 || DateTime.parse(events[index-1]['date_race']).isBefore(DateTime.now()));
+            (index == 0 || (prevRaceDate != null && prevRaceDate.isBefore(DateTime.now())));
+
         final isPast = raceDate.isBefore(DateTime.now());
 
         return _buildRaceCard(event, raceDate, isNext, isPast);

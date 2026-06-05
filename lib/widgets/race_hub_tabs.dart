@@ -48,7 +48,19 @@ class ResultsTab extends ConsumerWidget {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator(color: AppConfig.accentRed)),
-      error: (_, __) => const Center(child: Text('Results not available')),
+      error: (err, __) => Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, color: AppConfig.accentRed, size: 32),
+            const SizedBox(height: 12),
+            const Text('Results not available', style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 4),
+            Text(err.toString(), style: const TextStyle(color: Colors.white24, fontSize: 10)),
+          ],
+        ),
+      ),
+
     );
   }
 
@@ -170,7 +182,7 @@ class _TelemetryTabState extends ConsumerState<TelemetryTab> {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (_, __) => const Center(child: Text('Drivers list unavailable')),
+      error: (err, __) => Center(child: Text('Drivers list unavailable: $err')),
     );
   }
 
@@ -275,7 +287,7 @@ class TyresTab extends ConsumerWidget {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (_, __) => const Center(child: Text('Tyre strategy not available')),
+      error: (err, __) => Center(child: Text('Tyre strategy not available: $err')),
     );
   }
 
@@ -331,7 +343,7 @@ class WeatherTab extends ConsumerWidget {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (_, __) => const Center(child: Text('Weather not available')),
+      error: (err, __) => Center(child: Text('Weather not available: $err')),
     );
   }
 
@@ -393,7 +405,7 @@ class RaceControlTab extends ConsumerWidget {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (_, __) => const Center(child: Text('Race Control not available')),
+      error: (err, __) => Center(child: Text('Race Control not available: $err')),
     );
   }
 
@@ -457,7 +469,7 @@ class LapsTab extends ConsumerWidget {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator(color: AppConfig.accentRed)),
-      error: (_, __) => const Center(child: Text('Lap data unavailable')),
+      error: (err, __) => Center(child: Text('Lap data unavailable: $err')),
     );
   }
 }
@@ -497,7 +509,7 @@ class FastestLapsTab extends ConsumerWidget {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (_, __) => const Center(child: Text('Fastest lap data unavailable')),
+      error: (err, __) => Center(child: Text('Fastest lap data unavailable: $err')),
     );
   }
 }
@@ -552,7 +564,7 @@ class PitStopsTab extends ConsumerWidget {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (_, __) => const Center(child: Text('Pit stop data unavailable')),
+      error: (err, __) => Center(child: Text('Pit stop data unavailable: $err')),
     );
   }
 }

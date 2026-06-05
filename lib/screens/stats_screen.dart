@@ -34,7 +34,18 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
             child: seasonAsync.when(
               data: (data) => _buildStatsDashboard(data),
               loading: () => const Center(child: CircularProgressIndicator(color: AppConfig.accentRed)),
-              error: (err, stack) => const Center(child: Text('Season stats unavailable')),
+              error: (err, stack) => Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline, color: AppConfig.accentRed, size: 40),
+                    const SizedBox(height: 16),
+                    const Text('Season stats unavailable', style: TextStyle(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    Text(err.toString(), style: const TextStyle(color: Colors.white24, fontSize: 10)),
+                  ],
+                ),
+              ),
             ),
           ),
         ],
@@ -79,25 +90,27 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
     );
   }
 
+
   Widget _buildStatsDashboard(Map<String, dynamic> data) {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
         Row(
           children: [
-            _statCard('TOTAL POINTS', data['total_points'].toString()),
+            _statCard('TOTAL POINTS', (data['total_points'] ?? 0).toString()),
             const SizedBox(width: 12),
-            _statCard('WINS', data['wins'].toString()),
+            _statCard('WINS', (data['wins'] ?? 0).toString()),
           ],
         ),
         const SizedBox(height: 12),
         Row(
           children: [
-            _statCard('PODIUMS', data['podiums'].toString()),
+            _statCard('PODIUMS', (data['podiums'] ?? 0).toString()),
             const SizedBox(width: 12),
-            _statCard('AVG FINISH', data['avg_finish'].toString()),
+            _statCard('AVG FINISH', (data['avg_finish'] ?? 'N/A').toString()),
           ],
         ),
+
         const SizedBox(height: 24),
         Text('CHAMPIONSHIP EVOLUTION', style: AppConfig.displayStyle.copyWith(fontSize: 12, color: Colors.white24)),
         const SizedBox(height: 16),
