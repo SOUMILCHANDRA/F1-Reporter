@@ -78,6 +78,13 @@ async def get_news(page: int = 1, pageSize: int = 20):
     if not supabase:
         raise HTTPException(status_code=500, detail="Database not configured")
     try:
+        if page == 1:
+            try:
+                from rss_scraper import fetch_and_filter_news
+                fetch_and_filter_news()
+            except Exception as e:
+                logger.warning(f"Background news scrape failed: {e}")
+                
         offset = (page - 1) * pageSize
         res = supabase.table("f1_news").select("*").order("publishedAt", desc=True).range(offset, offset + pageSize - 1).execute()
         return res.data
@@ -204,6 +211,19 @@ async def get_telemetry(year: int, round: int, session: str, driver: str):
     except Exception as e:
         logger.error(f"Telemetry failed: {e}")
         raise HTTPException(status_code=404, detail="Telemetry data unavailable")
+
+@app.get("/position_data/{year}/{round}/{session}/{driver}")
+async def get_position_data(year: int, round: int, session: str, driver: str):
+    if not supabase:
+        raise HTTPException(status_code=500, detail="Database not configured")
+    try:
+        res = supabase.table("position_data").select("*").eq("year", year).eq("round_number", round).eq("session_type", session).eq("driver_code", driver).execute()
+        if not res.data or "pos_data" not in res.data[0]:
+            return {}
+        return res.data[0]["pos_data"]
+    except Exception as e:
+        logger.error(f"Position data failed: {e}")
+        raise HTTPException(status_code=404, detail="Position data unavailable")
 
 @app.get("/weather/{year}/{round}/{session}")
 async def get_weather(year: int, round: int, session: str):

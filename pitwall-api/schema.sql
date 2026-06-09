@@ -164,3 +164,14 @@ CREATE TABLE IF NOT EXISTS circuit_info (
     rotation NUMERIC NOT NULL,
     UNIQUE(year, round_number)
 );
+
+-- Position Data Table
+CREATE TABLE IF NOT EXISTS position_data (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    year INTEGER NOT NULL,
+    round_number INTEGER NOT NULL,
+    session_type TEXT NOT NULL,
+    driver_code TEXT NOT NULL,
+    pos_data JSONB NOT NULL,
+    UNIQUE(year, round_number, session_type, driver_code)
+);
