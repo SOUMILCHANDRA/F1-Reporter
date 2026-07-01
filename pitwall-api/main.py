@@ -163,12 +163,27 @@ async def get_constructor_standings(year: int):
         logger.error(f"Constructor standings failed: {e}")
         raise HTTPException(status_code=404, detail="Standings unavailable")
 
+SESSION_MAP = {
+    "Race": "R",
+    "Qualifying": "Q",
+    "Sprint": "S",
+    "Sprint Qualifying": "SQ"
+}
+
+def get_db_session(session: str) -> str:
+    return SESSION_MAP.get(session, session)
+
 @app.get("/results/{year}/{round}/{session}")
 async def get_results(year: int, round: int, session: str):
     if not supabase:
         raise HTTPException(status_code=500, detail="Database not configured")
     try:
-        res = supabase.table("session_results").select("*").eq("year", year).eq("round_number", round).eq("session_type", session).order("position").execute()
+        db_session = get_db_session(session)
+        res = supabase.table("session_results").select("*").eq("year", year).eq("round_number", round).eq("session_type", db_session).order("position").execute()
+        
+        if not res.data and db_session != session:
+            res = supabase.table("session_results").select("*").eq("year", year).eq("round_number", round).eq("session_type", session).order("position").execute()
+            
         return res.data
     except Exception as e:
         logger.error(f"Results load failed: {e}")
@@ -179,10 +194,12 @@ async def get_laps(year: int, round: int, session: str):
     if not supabase:
         raise HTTPException(status_code=500, detail="Database not configured")
     try:
-        # Group laps by driver_code using postgres/supabase. For now just return raw if client can handle or reformat
-        res = supabase.table("laps").select("*").eq("year", year).eq("round_number", round).eq("session_type", session).order("lap_number").execute()
+        db_session = get_db_session(session)
+        res = supabase.table("laps").select("*").eq("year", year).eq("round_number", round).eq("session_type", db_session).order("lap_number").execute()
         
-        # Format similar to old endpoint
+        if not res.data and db_session != session:
+            res = supabase.table("laps").select("*").eq("year", year).eq("round_number", round).eq("session_type", session).order("lap_number").execute()
+        
         drivers = {}
         for row in res.data:
             dc = row["driver_code"]
@@ -204,7 +221,12 @@ async def get_telemetry(year: int, round: int, session: str, driver: str):
     if not supabase:
         raise HTTPException(status_code=500, detail="Database not configured")
     try:
-        res = supabase.table("telemetry").select("*").eq("year", year).eq("round_number", round).eq("session_type", session).eq("driver_code", driver).execute()
+        db_session = get_db_session(session)
+        res = supabase.table("telemetry").select("*").eq("year", year).eq("round_number", round).eq("session_type", db_session).eq("driver_code", driver).execute()
+        
+        if not res.data and db_session != session:
+            res = supabase.table("telemetry").select("*").eq("year", year).eq("round_number", round).eq("session_type", session).eq("driver_code", driver).execute()
+            
         if not res.data or "telemetry_data" not in res.data[0]:
             return {}
         return res.data[0]["telemetry_data"]
@@ -217,7 +239,12 @@ async def get_position_data(year: int, round: int, session: str, driver: str):
     if not supabase:
         raise HTTPException(status_code=500, detail="Database not configured")
     try:
-        res = supabase.table("position_data").select("*").eq("year", year).eq("round_number", round).eq("session_type", session).eq("driver_code", driver).execute()
+        db_session = get_db_session(session)
+        res = supabase.table("position_data").select("*").eq("year", year).eq("round_number", round).eq("session_type", db_session).eq("driver_code", driver).execute()
+        
+        if not res.data and db_session != session:
+            res = supabase.table("position_data").select("*").eq("year", year).eq("round_number", round).eq("session_type", session).eq("driver_code", driver).execute()
+            
         if not res.data or "pos_data" not in res.data[0]:
             return {}
         return res.data[0]["pos_data"]
@@ -230,7 +257,12 @@ async def get_weather(year: int, round: int, session: str):
     if not supabase:
         raise HTTPException(status_code=500, detail="Database not configured")
     try:
-        res = supabase.table("weather").select("*").eq("year", year).eq("round_number", round).eq("session_type", session).order("time").execute()
+        db_session = get_db_session(session)
+        res = supabase.table("weather").select("*").eq("year", year).eq("round_number", round).eq("session_type", db_session).order("time").execute()
+        
+        if not res.data and db_session != session:
+            res = supabase.table("weather").select("*").eq("year", year).eq("round_number", round).eq("session_type", session).order("time").execute()
+            
         return {"data": res.data, "summary": {}}
     except Exception as e:
         logger.error(f"Weather failed: {e}")
