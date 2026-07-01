@@ -16,7 +16,6 @@ class CalendarScreen extends ConsumerStatefulWidget {
 class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   int selectedYear = DateTime.now().year;
   late Timer _timer;
-  final Duration _countdown = Duration.zero;
 
   @override
   void initState() {
@@ -301,10 +300,11 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                         child: FutureBuilder<String>(
                           future: AppConfig.getBaseUrl(),
                           builder: (context, snap) {
-                            if (!snap.hasData)
+                            if (!snap.hasData) {
                               return const Center(
                                 child: CircularProgressIndicator(),
                               );
+                            }
                             return Image.network(
                               '${snap.data}${data['url']}',
                               fit: BoxFit.contain,

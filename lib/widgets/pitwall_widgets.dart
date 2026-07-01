@@ -63,3 +63,34 @@ class TimingText extends StatelessWidget {
     );
   }
 }
+
+class TeamBadge extends StatelessWidget {
+  final String teamName;
+  final Color teamColor;
+
+  const TeamBadge({
+    super.key,
+    required this.teamName,
+    required this.teamColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: teamColor.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: teamColor.withValues(alpha: 0.5)),
+      ),
+      child: Text(
+        teamName,
+        style: TextStyle(
+          color: teamColor,
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+}

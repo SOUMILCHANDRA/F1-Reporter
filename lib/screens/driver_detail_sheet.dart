@@ -43,8 +43,8 @@ class DriverDetailSheet extends StatelessWidget {
             children: [
               Text('MAX VERSTAPPEN', style: Theme.of(context).textTheme.displaySmall?.copyWith(fontSize: 24)),
               const SizedBox(width: 12),
-              const Padding(
-                padding: EdgeInsets.only(bottom: 6),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 6),
                 child: TeamBadge(teamName: 'Red Bull Racing', teamColor: PitwallTheme.teamRedBull),
               ),
             ],

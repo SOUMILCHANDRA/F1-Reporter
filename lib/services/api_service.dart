@@ -10,7 +10,6 @@ class ApiService {
   static Future<dynamic> _get(String path) async {
     final base = await _base();
     final uri = Uri.parse('$base$path');
-    print('ApiService calling: $uri');
     try {
 
       final response = await http.get(uri).timeout(const Duration(seconds: 60));

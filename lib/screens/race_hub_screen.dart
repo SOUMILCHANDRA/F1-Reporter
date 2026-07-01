@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../config/app_config.dart';
 import '../providers/api_providers.dart';
-import '../widgets/pitwall_widgets.dart';
 import '../widgets/race_hub_tabs.dart';
 
 class RaceHubScreen extends ConsumerStatefulWidget {

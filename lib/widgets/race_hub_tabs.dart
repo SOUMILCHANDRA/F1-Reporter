@@ -22,14 +22,14 @@ class ResultsTab extends ConsumerWidget {
 
     return resultsAsync.when(
       data: (data) {
-        if (data.isEmpty)
+        if (data.isEmpty) {
           return const Center(child: Text('NO RESULTS DATA AVAILABLE'));
+        }
         return ListView.builder(
           padding: const EdgeInsets.all(16),
           itemCount: data.length,
           itemBuilder: (context, index) {
             final r = data[index];
-            final teamColor = _hexToColor(r['team_color']);
             return PitwallCard(
               margin: const EdgeInsets.only(bottom: 8),
               padding: EdgeInsets.zero,
@@ -210,8 +210,9 @@ class _TelemetryTabState extends ConsumerState<TelemetryTab> {
 
     return resultsAsync.when(
       data: (results) {
-        if (results.isEmpty)
+        if (results.isEmpty) {
           return const Center(child: Text('NO DRIVERS AVAILABLE'));
+        }
 
         final drivers = results
             .map((r) => r['driver_code']?.toString() ?? '???')
@@ -405,8 +406,9 @@ class TyresTab extends ConsumerWidget {
 
     return strategyAsync.when(
       data: (data) {
-        if (data.isEmpty)
+        if (data.isEmpty) {
           return const Center(child: Text('NO STRATEGY DATA AVAILABLE'));
+        }
         return ListView.builder(
           padding: const EdgeInsets.all(16),
           itemCount: data.length,
@@ -492,8 +494,9 @@ class WeatherTab extends ConsumerWidget {
 
     return weatherAsync.when(
       data: (data) {
-        if ((data.isEmpty))
+        if ((data.isEmpty)) {
           return const Center(child: Text('NO WEATHER DATA AVAILABLE'));
+        }
         final airTemp = data['air_temp'] ?? 'N/A';
         final trackTemp = data['track_temp'] ?? 'N/A';
         final humidity = data['humidity'] ?? 'N/A';
@@ -570,8 +573,9 @@ class RaceControlTab extends ConsumerWidget {
 
     return rcAsync.when(
       data: (data) {
-        if (data.isEmpty)
+        if (data.isEmpty) {
           return const Center(child: Text('NO RACE CONTROL MESSAGES'));
+        }
         return ListView.builder(
           padding: const EdgeInsets.all(16),
           itemCount: data.length,
@@ -654,8 +658,9 @@ class LapsTab extends ConsumerWidget {
 
     return lapsAsync.when(
       data: (data) {
-        if (data.isEmpty)
+        if (data.isEmpty) {
           return const Center(child: Text('NO LAP DATA AVAILABLE'));
+        }
         return ListView.builder(
           padding: const EdgeInsets.all(16),
           itemCount: data.length,
@@ -744,8 +749,9 @@ class FastestLapsTab extends ConsumerWidget {
 
     return resultsAsync.when(
       data: (data) {
-        if (data.isEmpty)
+        if (data.isEmpty) {
           return const Center(child: Text('NO DATA FOR THIS SESSION'));
+        }
         final fastest = data
             .where((r) => r['fastest_lap_time'] != null)
             .toList();
@@ -755,8 +761,9 @@ class FastestLapsTab extends ConsumerWidget {
           ),
         );
 
-        if (fastest.isEmpty)
+        if (fastest.isEmpty) {
           return const Center(child: Text('NO FASTEST LAPS RECORDED'));
+        }
 
         return ListView.builder(
           padding: const EdgeInsets.all(16),
@@ -809,8 +816,9 @@ class PitStopsTab extends ConsumerWidget {
 
     return lapsAsync.when(
       data: (data) {
-        if (data.isEmpty)
+        if (data.isEmpty) {
           return const Center(child: Text('NO PIT STOP DATA AVAILABLE'));
+        }
         final List pitStops = [];
         for (var driver in data) {
           final List laps = driver['laps'] ?? [];
@@ -826,8 +834,9 @@ class PitStopsTab extends ConsumerWidget {
         }
         pitStops.sort((a, b) => (a['lap'] as int).compareTo(b['lap'] as int));
 
-        if (pitStops.isEmpty)
+        if (pitStops.isEmpty) {
           return const Center(child: Text('NO PIT STOPS RECORDED'));
+        }
 
         return ListView.builder(
           padding: const EdgeInsets.all(16),
@@ -871,8 +880,9 @@ String _durationToString(num? ms) {
   final s = duration.inSeconds.remainder(60);
   final mm = ms.toInt().remainder(1000);
 
-  if (h > 0)
+  if (h > 0) {
     return '$h:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}.${mm.toString().padLeft(3, '0')}';
+  }
   return '$m:${s.toString().padLeft(2, '0')}.${mm.toString().padLeft(3, '0')}';
 }
 
